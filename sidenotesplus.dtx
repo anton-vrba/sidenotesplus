@@ -1,0 +1,1078 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2022 by Anton Vrba
+%
+% Home Page: https://github.com/anton-vrba/sidenotesplus
+%    Issues: https://github.com/anton-vrba/sidenotesplus/issues
+%
+%
+% LaTeX Package: sidenotesplus
+% -----------------------
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3c of this license
+% or (at your option) any later version. The latest version of this
+% license is in
+%    http://www.latex-project.org/lppl.txt
+%    and version 1.3c or later is part of all distributions of LaTeX
+%    version 2008-05-04 or later.
+%
+% This work was inspired by: https://ctan.org/pkg/sidenotes by: Andy Thomas
+%
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Anton Vrba.
+%
+% This work consists of the files sidenotesplus.dtx and sidenotesplus.ins
+% and the derived filebase sidenotesplus.sty.
+%
+% \fi
+%
+% \iffalse
+%<*driver>
+\ProvidesFile{sidenotesplus.dtx}
+%</driver>
+%<package>\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+%<package>\ProvidesPackage{sidenotesplus}
+%<*package>
+    [2022/05/15 1.00 rich text marginal notes, tables and figures ]
+%</package>
+%<package>\RequirePackage{marginnote} % provides an offset option for the marginals instead of a float
+%<package>\RequirePackage{caption} % handles the captions (in the margin)
+%<package>\RequirePackage{xparse} % new LaTeX3 syntax to define macros and environments
+%<package>\RequirePackage{calc}
+%<package>\RequirePackage{etoolbox} % provides \patchcmd
+%<package>\RequirePackage{l3keys2e}
+%<package>\RequirePackage{ifoddpage}
+%<package>\RequirePackage{mparhack} % get marginpar right
+%<package>\RequirePackage{xspace}
+%<package>\RequirePackage[strict]{changepage}
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{tabularx}
+\usepackage{xspace}
+
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+\begin{document}
+  \DocInput{sidenotesplus.dtx}
+  \PrintIndex
+  \PrintChanges
+\end{document}
+%</driver>
+% \fi
+%
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+%
+%
+%
+% \GetFileInfo{sidenotesplus.dtx}
+% \title{The \textsf{sidenotesplus} package}
+% \author{Anton Vrba\\\small%
+% Home Page: \url{https://github.com/anton-vrba/sidenotesplus} \\\small
+%    Issues: \url{https://github.com/anton-vrba/sidenotesplus/issues }}
+% \date{Version \fileversion\xspace from \filedate}
+%
+% \maketitle
+%
+% \changes{1.0}{2022/05/15}{Initial Release}
+%
+% \begin{abstract}
+%  \noindent A package to manage the margin notes, figures, tables and captions.
+%  Also body text can be extended into the margin for wide figures, tables and equation.
+%  Twoside symmetry is preserved. For biblatex users, routines for side references are
+%  included.
+% \end{abstract}
+%
+% \paragraph*{Note:} This package is inspired by the package \verb"sidenotes" authored by
+% Andy Thomas and has many features in common. But, compatibility is
+% not maintained between the two.
+%
+% \section{Usage}
+% Below the options that can be passed to the package \verb"sidenotesplus"
+% with the package defaults in bold font.
+%
+% \begin{tabularx}{\textwidth}{ r X }
+%  \verb"mark=" & \textbf{alph}, Alph, arabic, roman, Roman, fnsymbol \\
+%  \verb"font=" & \textbf{rm}, sf\\
+%  \verb"size=" & normal, small, \textbf{footnote}, script \\
+%  \verb"shape=" & \textbf{it}, sl, up\\
+%  \verb"classic" & switches to a classic look\\
+%  \verb"sepdiff=" & \textbf{$\mathbf{1}$em}, and valid length within reason \\
+%  \verb"ragged" & switches to ragged outer margins\\[1em]
+% \end{tabularx}
+% The normal page style is that margin notes are left-right justified with the
+% last line ragged to the outer edge. The option \verb"ragged" changes this
+% style to ragged-outer, that is the left page's marginal notes are \verb"\raggedleft"
+% and the right page's are \verb"\raggedright".
+%
+% The marginal note's reference number or mark is placed in the margin separator,
+% that is on the left page the mark is on the right hand side of the note.
+% The option \verb"classic" always places the mark to the left of the marginal note.
+% This requires that the margin separator on the left page is slightly reduced if not
+% enough space is availabe to the page outer edge.
+%
+% \DescribeMacro{\marginpar}
+% The LaTex command \verb+marginpar{abc}+ with only one
+% parameter it is modified to
+% \verb+\marginpar[left styled abc]{right styled abc}+
+% maintaining page symmetry.
+% If called with two parameters nothing is changed
+%
+%
+% \DescribeMacro{\sidenote}
+% \noindent The \verb"\sidenote" has four options
+%  \verb"*[offset]<offsett>(custom mark){content}"
+% preceding the note content
+%
+% \begin{tabularx}{\textwidth}{ r X }
+%   \verb"*" & sidenote reference labels are omitted \\
+%   \verb"[offset]" & floating offset, negative is towards page top\\
+%   \verb"<offsett>" & fixed offset, negative is towards page top \\
+%   \verb"(custom mark)" & any custom mark\\
+% \end{tabularx}
+% The options are defined by their enclosures \verb"[],<>,()"
+% and must be in this order if used.
+% Example, \verb"\sitenote[10pt]($\bigstar$){text}" is valid
+% but \verb"\sitenote($\bigstar$)[10pt]{text}" will give an error
+%
+% ~
+%
+% \DescribeMacro{\sidenotetext}
+% \DescribeMacro{\sidenotemark}
+% \DescribeMacro{\sidenotetextbefore} \noindent Similar to \verb"\footnotemark"
+% and \verb"\footnotetext" the macros \verb"\sidenotemark", \verb"\sidenotetext"
+% and \verb"\sidenotetextbefore" are provided, the latter two have the same
+% options as \verb"\sidenote". This is useful in placing margin notes in
+% environments where the \verb"\sidenode" is not permitted.
+% The margin note is not positioned by the \verb"\sidenotemark", but rather it
+% is positioned relative to \verb"\sidenotetext" or \verb"\sidenotetextbefore"
+%
+%
+% ~
+%
+%\DescribeMacro{\sidecaption}
+% The \verb+\sidecaption[entry][offset]{text}+ macro can be used if the caption
+% of a figure or table should be in the margin. The caption has to be adjacent
+% to the figure, so a float is not an option here. Therefore, the caption might
+% overlap with other marginals. Then, these marginals have to be adjusted with
+% offset parameters. The formatting of the caption is done by the \emph{caption}
+% package by defining a \emph{sidecaption} style. Please refer to the
+% documentation of the caption package for information on styles. The macro can
+% be starred, which is analog to the regular starred caption (no numbering, no
+% tof entry): \verb+\sidecaption*[offset]{text}+.
+%
+% ~
+%
+% \DescribeEnv{marginfigure}
+% The marginfigure environment puts a figure and its caption in the margin.
+% Instead of \verb+\begin{figure}[htbp]+ use \verb+\begin{marginfigure}[offset]+.
+% Again, using an offset value switches the behavior from float to fixed
+% position. The marginfigure has its own caption style named \emph{marginfigure}.
+%
+% ~
+%
+% \DescribeEnv{margintable}
+% The margintable environment works similar to marginfigure, but with table
+% environments. Use \verb+\begin{margintable}[offset]+ instead of
+% \verb+\begin{table}[htbp]+, its caption style is named \emph{margintable}.
+%
+% ~
+%
+% \DescribeEnv{figure*}
+% The \verb+figure*+ environment is used to position figures across the full
+% page, i.e. the text width plus the margin. The algorithm has to distinguish
+% between recto and verso (left and right) pages and might need up to three
+% \LaTeX{} runs to provide the desired result. The corresponding caption style
+% is called \emph{widefigure}.
+% \DescribeEnv{table*}
+% The sister environment for tables is \verb+table*+. Use \emph{widetable} to
+% change its caption style.
+%
+%
+% \DescribeEnv{text*}
+% The \verb+text*+ environment is used to render text across up to
+% the full page width. Page breaks are not permitted within this environment.
+% This environment is useful when extra width for equations is required.
+% The environment \verb+\begin{text*}[0.5]+ extends the text width by
+% \verb"0.5*(\marginparwidth+\marginparsep)",  omitting the option is equivalent
+% to specifying the option \verb+[1]+,
+%
+%
+% \DescribeMacro{\sidecite}
+% \DescribeMacro{\sidecitet}
+% \DescribeMacro{\sidecitets}
+% The \verb"\sidecite", \verb"\sidecitet" and \verb"\sidecitets" provide citing
+% references in the margin and uses the package \verb"biblatex" which has to be setup
+% outside the \verb+sitenotesplus+ package.
+% Example biblatex option setup:
+%
+% ~~~~\verb+\usepackage[english]{babel}+
+%
+% ~~~~\verb+\usepackage[backend=biber,style=philosophy-classic]{biblatex}+
+%
+% \noindent The command \verb"\sidecite{BibReference}" places a sidenote mark
+% and the citation reference in the side margin. \verb"\sidecitet{BibReference}"
+% types Author followed by the sidenote mark, and \verb"\sidecitets{BibReference}"
+% is the possessive version, i.e. Author's \ldots
+%
+% The options for all three above commands are\par
+% \noindent\verb+\sidesecite[offset][before][after]<offset>(custom mark){BibReference}+
+% renders the sidenote citation using the \verb+biblatex+ command\par
+% \noindent\verb+\fullcite[before][after]{BibReference}+
+%
+% \StopEventually{}
+%
+% \section{Implementation}
+%
+% \iffalse
+%<*package>
+% \fi
+%
+% *********************************************************
+%
+%    \begin{macrocode}
+\ExplSyntaxOn
+
+%    \end{macrocode}
+%    \begin{macrocode}
+\DeclareExpandableDocumentCommand{\IfNoValueOrEmptyTF}{ m m m }
+{
+ \IfNoValueTF{#1}
+  {#2}
+  {\tl_if_empty:nTF {#1} {#2} {#3}}
+}
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\setcounter{topnumber}{4}
+\setcounter{bottomnumber}{4}
+\setcounter{totalnumber}{8}
+%    \end{macrocode}
+%
+% \begin{macro}{\sidenote@setup}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \sidenote@setup {} {%
+   \__snp_size\__snp_shape\__snp_font\leavevmode%
+   \lineskip=0pt \lineskiplimit=0pt %
+   \tolerance=2000 \hyphenpenalty=300 \exhyphenpenalty=300%
+   \doublehyphendemerits=100000%
+   \finalhyphendemerits=\doublehyphendemerits
+   }
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \__snp_symbol {} {\alph}
+\NewDocumentCommand \__snp_font {} {}
+\NewDocumentCommand \__snp_shape{} {\itshape}
+\NewDocumentCommand \__snp_size {} {\footnotesize}
+\NewDocumentCommand \__snp_leftmarginstyle{} {}
+\NewDocumentCommand \__snp_rightmarginstyle{} {}
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\bool_new:N \l_snp_centrecaption
+\bool_new:N \l_snp_biblatexoff
+\bool_new:N \l_snp_ragged
+\bool_new:N \l_snp_symmetric
+\bool_new:N \l_snp_page
+\bool_new:N \snp@oddpage
+\bool_set_false:N \l_snp_centrecaption
+\bool_set_false:N \l_snp_biblatexoff
+\bool_set_false:N \l_snp_ragged
+\bool_set_true:N \l_snp_symmetric
+\bool_set_true:N \snp@oddpage
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\newlength{\@snp@marginsepdiff}
+\setlength{\@snp@marginsepdiff}{1em}
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\keys_define:nn { sidenoteplus }
+{
+ mark .code:n = \str_case:nn {#1}%
+     {  {fnsymbol}{\RenewDocumentCommand \__snp_symbol {}{\fnsymbol}}%
+        {Alph}{\RenewDocumentCommand \__snp_symbol {}{\Alph}}%
+        {arabic}{\RenewDocumentCommand \__snp_symbol {}{\arabic}}%
+        {Roman}{\RenewDocumentCommand \__snp_symbol {}{\Roman}}%
+        {roman}{\RenewDocumentCommand \__snp_symbol {}{\roman}}%
+        {Other}{}  },
+ font .code:n = \str_case:nn {#1}%
+      {  {sf}{\RenewDocumentCommand \__snp_font {}{\sffamily}}%
+        {Other}{} },
+ size .code:n = \str_case:nn {#1}%
+      {  {small}{\RenewDocumentCommand \__snp_size {}{\small}}%
+         {script}{\RenewDocumentCommand \__snp_size {}{\scriptsize}}%
+         {normal}{\RenewDocumentCommand \__snp_size {}{\normalsize}}%
+        {Other}{} },
+ shape .code:n = \str_case:nn {#1}%
+      {  {sl}{\RenewDocumentCommand \__snp_shape{}{\slshape}}%
+         {up}{\RenewDocumentCommand \__snp_shape{}{\upshape}}%
+        {Other}{} },
+ sepdiff .code:n = \setlength{\@snp@marginsepdiff}{#1},
+ classic .code:n = \bool_set_false:N \l_snp_symmetric,
+ ragged .code:n = { \RenewDocumentCommand \__snp_leftmarginstyle {}{\raggedleft}
+                    \RenewDocumentCommand \__snp_rightmarginstyle {}{\raggedright}
+                    \bool_set_true:N \l_snp_ragged  },
+ biboff .code:n = {\bool_set_true:N \l_snp_biblatexoff},
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\ProcessKeysOptions { sidenoteplus }
+\bool_if:NTF \l_snp_ragged
+     {\setlength{\@snp@marginsepdiff}{0pt} \bool_set_false:N \l_snp_symmetric}
+     {\relax}
+\bool_if:NTF \l_snp_symmetric {\setlength{\@snp@marginsepdiff}{0pt}}{\relax}
+%    \end{macrocode}
+% ***********************************************************
+%
+% counter for consecutively labelled, or marked, sidenotes
+%
+%    \begin{macrocode}
+\newcounter{sidenote}[page] % make a counter
+\setcounter{sidenote}{0} % init the counter
+%    \end{macrocode}
+% ***********************************************************
+%
+% formats sidenote label
+%
+%    \begin{macrocode}
+\NewDocumentCommand \__snp_thesidenotemark { m }
+{
+    \leavevmode
+    \ifhmode
+        \edef \@x@sf {\the \spacefactor }
+        \nobreak
+    \fi
+    \hbox {\@textsuperscript {\normalfont #1 }}
+    \ifhmode
+        \spacefactor \@x@sf
+    \fi
+    \relax
+}
+%    \end{macrocode}
+% ***********************************************************
+%
+%  for multiple side notes
+%
+%    \begin{macrocode}
+\NewDocumentCommand \__snp_multisign { } {3sp}
+\NewDocumentCommand \__snp_multimarker { }
+{
+  \kern-\__snp_multisign
+  \kern\__snp_multisign\relax
+}
+\NewDocumentCommand \__snp_multichecker { }
+{
+  \dim_compare:nNnTF \lastkern = \__snp_multisign
+  {\__snp_thesidenotemark{,}}
+  {}
+}
+%    \end{macrocode}
+%
+% ***********************************************************
+%
+% ragged left last line in left-right justified text
+%
+%    \begin{macrocode}
+\NewDocumentEnvironment{@snp@llr} {}%
+{\setlength{\parindent}{0pt}\setlength{\leftskip}{0pt plus 1fil}\setlength{\rightskip}{0pt plus -1fil}}{\par}
+%    \end{macrocode}
+%
+%
+% \begin{macro}{\marginpar}
+% ***********************************************************
+%
+% \verb+\marginpar+ modified for twopage symmetry
+%
+%    \begin{macrocode}
+\let\oldmarginpar\marginpar
+%    \end{macrocode}
+%
+%
+%    \begin{macrocode}
+\let\oldmarginpar\marginpar
+\renewcommand{\marginpar}[2][]{
+   \if\relax\detokenize{#1}\relax
+      \oldmarginpar[\__snp_leftmarginstyle\sidenote@setup{#2}]%
+                   {\__snp_rightmarginstyle\sidenote@setup{#2}}%
+   \else%two parameters, let them use their styling
+      \oldmarginpar[{#1}]{#2}%
+   \fi%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% ***********************************************************
+%
+% All margin calls from within package are via
+%    \begin{macrocode}
+\NewDocumentCommand \__snp_placemarginal { m m }
+{
+  \if@twoside
+     \__snp_isoddpage
+     {
+        \IfNoValueOrEmptyTF{#1}
+        {\marginpar{\sidenote@setup #2 }}
+        {\marginnote{\sidenote@setup #2}[#1]}
+     }
+     {
+     \bool_if:NTF \l_snp_symmetric
+     {
+        \IfNoValueOrEmptyTF{#1}
+        {\marginpar{\sidenote@setup #2}}
+        {\marginnote{\begin{@snp@llr}\sidenote@setup #2\end{@snp@llr}}[#1]}
+     }
+     {
+        \IfNoValueOrEmptyTF{#1}
+        {\marginpar{\sidenote@setup #2}}
+        {\marginnote{\sidenote@setup #2}[#1]}
+     }
+     }
+  \else
+     \IfNoValueOrEmptyTF{#1}
+     {\marginpar{\sidenote@setup #2}}
+     {\marginnote{\sidenote@setup #2}[#1]}
+  \fi
+}
+%    \end{macrocode}
+%
+%
+% \begin{macro}{\sidenote}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \sidenote {s o d<> d() +m  }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+{
+  \IfBooleanTF{#1}
+  { % starred
+  \__snp_sidenotemark*(#4)
+  \__snp_sidenotetext*[#2]<#3>(#4){#5}
+  }{ % unstarred
+  \__snp_sidenotemark(#4)
+  \__snp_sidenotetext[#2]<#3>(#4){#5}
+  \__snp_multimarker
+  }
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\sidenotemark}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \sidenotemark {s d() }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+{
+  \IfBooleanTF{#1}
+  { % starred
+    \relax}
+  {% unstarred
+     \__snp_sidenotemark (#2)
+  }
+  \xspace
+}
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \__snp_sidenotemark {s d() }
+{
+  \IfBooleanTF{#1}
+  { % starred
+    \relax}
+  {% unstarred
+     \__snp_multichecker
+     \IfNoValueOrEmptyTF{#2}
+       {  \refstepcounter{sidenote}
+          \__snp_thesidenotemark{\__snp_symbol{sidenote}}
+       }
+       { \__snp_thesidenotemark{#2} }
+     \__snp_multimarker
+  }
+}
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand{\__snp_onelineup}{}
+   {\par \vspace*{-1\baselineskip}}
+\NewDocumentCommand{\__snp_leftnotelabel}{ m }
+   {\makebox[0em][l]{\hspace*{0.9ex}#1}}
+\NewDocumentCommand{\__snp_rightnotelabel}{ m }
+   {\makebox[0em][r]{#1\hspace*{0.9ex}}}
+\NewDocumentCommand{\__snp_justifiedleftnotelabel}{ m }
+   {\makebox[0em][l]{\hspace*{\marginparwidth+0.9ex}#1}}
+%    \end{macrocode}
+%
+% \begin{macro}{\sidenotetext}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \sidenotetext {s o d<> d() +m  } {
+   \IfBooleanTF{#1}
+      { \__snp_sidenotetext*[#2]<#3>(#4){#5} }
+      { \__snp_sidenotetext[#2]<#3>(#4){#5} }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\sidenotetextbefore}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \sidenotetextbefore {s o d<> d() +m  } {
+   \refstepcounter{sidenote}
+   \IfBooleanTF{#1}
+      { \__snp_sidenotetext*[#2]<#3>(#4){#5} }
+      { \__snp_sidenotetext[#2]<#3>(#4){#5} }
+    \addtocounter{sidenote}{-1}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+%\
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\newlength{\l@snp@offset}
+\NewDocumentCommand \__snp_sidenotetext {s o d<> d() +m } {
+  \IfNoValueOrEmptyTF{#2}
+     {\relax}
+     {\setlength{\l@snp@offset}{#2} \vspace*{ \l@snp@offset }}
+  { % unstarred
+     \bool_if:NTF \l_snp_ragged
+     {
+     \if@twoside
+       \__snp_isoddpage
+       {%odd page
+          \IfNoValueOrEmptyTF{#4}
+            {  \__snp_placemarginal{#3}
+               {\__snp_rightnotelabel{\normalfont\__snp_symbol{sidenote}}#5}
+            }
+            {  \__snp_placemarginal{#3}
+               {\__snp_rightnotelabel{\normalfont #4} #5}
+            }
+       }
+       {%even page
+          \IfNoValueOrEmptyTF{#4}
+               {\__snp_placemarginal{#3}
+                  {\__snp_justifiedleftnotelabel{\normalfont%
+                     \__snp_symbol{sidenote}}\hspace*{\marginparwidth}%
+                     \__snp_onelineup#5}
+               }
+               {\__snp_placemarginal{#3}
+                  {\__snp_justifiedleftnotelabel{\normalfont%
+                      #4}\hspace*{\marginparwidth}\__snp_onelineup {#5}}
+               }
+       }
+     \else
+        \IfNoValueOrEmptyTF{#4}
+           {\__snp_placemarginal{#3}
+              {\__snp_rightnotelabel{\normalfont%
+                  \__snp_symbol{sidenote}}#5}
+           }
+           {\__snp_placemarginal{#3}
+              {\__snp_rightnotelabel{\normalfont #4} #5}
+           }
+     \fi
+     }
+     {
+     \if@twoside
+       \__snp_isoddpage
+       {%odd page
+          \IfNoValueOrEmptyTF{#4}
+            {\__snp_placemarginal{#3}
+               {\__snp_rightnotelabel{\normalfont\__snp_symbol{sidenote}}#5}
+            }
+            {\__snp_placemarginal{#3}
+               {\__snp_rightnotelabel{\normalfont #4}\__snp_onelineup #5}
+            }
+       }
+       {%even page
+          \bool_if:NTF \l_snp_symmetric
+             {
+               \IfNoValueOrEmptyTF{#4}
+               {\__snp_placemarginal{#3}
+                  {  \__snp_justifiedleftnotelabel{\normalfont\__snp_symbol{sidenote}}
+                     \hspace*{\marginparwidth}\__snp_onelineup#5
+                  }
+               }
+               {\__snp_placemarginal{#3}
+                  {  \__snp_justifiedleftnotelabel{\normalfont
+                     #4}\hspace*{\marginparwidth}\__snp_onelineup {#5}
+                  }
+               }
+            }
+            {
+               \IfNoValueOrEmptyTF{#4}
+               {  \__snp_placemarginal{#3}
+                  {\__snp_rightnotelabel{\normalfont\__snp_symbol{sidenote}}#5}
+               }
+               {  \__snp_placemarginal{#3}
+                  {\__snp_rightnotelabel{\normalfont #4}\__snp_onelineup #5}
+               }
+            }
+       }
+     \else
+        \IfNoValueOrEmptyTF{#4}
+           {   \__snp_placemarginal{#3}
+               {\__snp_rightnotelabel{\normalfont\__snp_symbol{sidenote}}#5}
+           }
+           {   \__snp_placemarginal{#3}
+               {\__snp_rightnotelabel{\normalfont #4}\__snp_onelineup #5}
+           }
+     \fi
+     }
+  }
+  \IfNoValueOrEmptyTF{#2}
+     {\relax}
+     { \setlength{\l@snp@offset}{#2 *(-1)} \vspace*{{\l@snp@offset}}}
+}
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\DeclareCaptionStyle{sidecaption}{font=footnotesize}
+%    \end{macrocode}
+%
+% \begin{macro}{\sidecaption}
+%    \begin{macrocode}
+\NewDocumentCommand \sidecaption {s d<> o m} {
+  \captionsetup{style=sidecaption}
+  \IfBooleanTF{#1}
+  { % starred
+    \IfNoValueOrEmptyTF{#2}
+    {\marginnote{\caption*{#4}}}
+    {\marginnote{\caption*{#4}}[#2]}
+  }{ % unstarred
+     \IfNoValueOrEmptyTF{#3}
+     {
+        \IfNoValueOrEmptyTF{#2}
+        {\marginnote{\caption{#4}}}
+        {\marginnote{\caption{#4}}[#2]}
+     }
+     {
+        \IfNoValueOrEmptyTF{#2}
+        {\marginnote{\caption[#3]{#4}}}
+        {\marginnote{\caption[#3]{#4}}[#2]}
+     }
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\istwosided}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \istwosided {m m} {
+\if@twoside #1 \else #2 \raggedleft \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\raggedinner}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \raggedinner {} {
+\if@twoside
+     \__snp_isoddpage {\raggedleft}{\raggedright}
+\else
+     \raggedleft
+\fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\raggedouter}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \raggedouter {} {
+\if@twoside
+     \__snp_isoddpage {\raggedright}{\raggedleft}
+\else
+     \raggedleft
+\fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\newsavebox{\l_snp_marginfigurebox}
+\DeclareCaptionStyle{marginfigure}{font=footnotesize}
+%    \end{macrocode}
+%
+% \begin{environment}{marginfigure}
+%    \begin{macrocode}
+\NewDocumentEnvironment{marginfigure} { o d<> }
+{ % begin part
+  \begin{lrbox}{\l_snp_marginfigurebox}
+    \begin{minipage}{\marginparwidth}
+      \captionsetup{type=figure,style=marginfigure}
+}
+%    \end{macrocode}
+% \end{environment}
+%
+%    \begin{macrocode}
+{ % end part
+    \end{minipage}%
+  \end{lrbox}%
+   \IfNoValueOrEmptyTF{#1}
+      {\relax}
+      {\setlength{\l@snp@offset}{#1} \vspace*{ \l@snp@offset }}
+  \__snp_placemarginal{#2}{\usebox{\l_snp_marginfigurebox}}
+  \IfNoValueOrEmptyTF{#1}
+     {\relax}
+     { \setlength{\l@snp@offset}{#1 *(-1)} \vspace*{{\l@snp@offset}}}
+}
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\newsavebox{\l_snp_margintablebox}
+\DeclareCaptionStyle{margintable}{font=footnotesize}
+%    \end{macrocode}
+%
+% \begin{environment}{margintable}
+%    \begin{macrocode}
+\NewDocumentEnvironment{margintable} { o d<>  }
+{ % begin part
+  \begin{lrbox}{\l_snp_margintablebox}
+    \begin{minipage}{\marginparwidth}
+      \captionsetup{type=table,style=margintable}
+}
+%    \end{macrocode}
+% \end{environment}
+%
+%    \begin{macrocode}
+{ % end part
+    \end{minipage}
+  \end{lrbox}
+   \IfNoValueOrEmptyTF{#1}
+      {\relax}
+      {\setlength{\l@snp@offset}{#1} \vspace*{ \l@snp@offset }}
+  \__snp_placemarginal{#2}{\usebox{\l_snp_margintablebox}}
+  \IfNoValueOrEmptyTF{#1}
+    {\relax}
+    {\setlength{\l@snp@offset}{#1 *(-1)} \vspace*{{\l@snp@offset}}}
+}
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\AtBeginDocument{%
+\newlength{\l@snp@extrawidth}
+\setlength{\l@snp@extrawidth}{\marginparwidth}
+\addtolength{\l@snp@extrawidth}{\marginparsep}  }
+%    \end{macrocode}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \__snp_isoddpage {m m}
+      { \checkoddpage\ifoddpage #1 \else #2 \fi }
+%    \end{macrocode}
+%
+% \begin{environment}{@snp@autoadjustwidth}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentEnvironment{@snp@autoadjustwidth}{ m m }%
+{ % begin part
+\begin{adjustwidth}{0pt}{0pt}
+  \if@twoside
+     \__snp_isoddpage{\begin{adjustwidth}{#1}{-#2}}%
+        {\begin{adjustwidth}{-#2}{#1}}
+  \else
+     \begin{adjustwidth}{#1}{-#2}
+  \fi
+}
+%    \end{macrocode}
+% \end{environment}
+%
+%    \begin{macrocode}
+{ % end part
+   \end{adjustwidth}\end{adjustwidth}
+}
+%    \end{macrocode}
+%
+% \begin{environment}{text*}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentEnvironment{text*}{ o }%
+{ % begin part
+ \begin{adjustwidth}{0pt}{0pt}
+ \IfNoValueOrEmptyTF{#1}
+ {
+  \if@twoside
+     \__snp_isoddpage{\begin{adjustwidth}{0pt}{-\l@snp@extrawidth}}%
+        {\begin{adjustwidth}{-\l@snp@extrawidth*}{0pt}}
+  \else
+     \begin{adjustwidth}{0pt}{-\l@snp@extrawidth*}
+  \fi
+  }
+  {
+  \if@twoside
+     \__snp_isoddpage{\begin{adjustwidth}{0pt}{-\l@snp@extrawidth*#1}}%
+        {\begin{adjustwidth}{-\l@snp@extrawidth*#1}{0pt}}
+  \else
+     \begin{adjustwidth}{0pt}{-\l@snp@extrawidth*#1}
+  \fi
+  }
+}
+%    \end{macrocode}
+% \end{environment}
+%
+%    \begin{macrocode}
+{  % end part
+\end{adjustwidth}\end{adjustwidth} \__snp_placemarginal{}{}
+}
+%    \end{macrocode}
+%
+% \begin{environment}{figure*}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\RenewDocumentEnvironment{figure*}{ O{htbp} }
+%    \end{macrocode}
+% \end{environment}
+%
+%    \begin{macrocode}
+{
+   \begin{figure}[#1]
+   \begin{@snp@autoadjustwidth}{}{\l@snp@extrawidth}
+   \begin{minipage}[c]{\linewidth}
+   \centering
+   \captionsetup{ margin={\l@snp@extrawidth/2,\l@snp@extrawidth/2}}
+}{  % end part
+   \end{minipage}
+   \end{@snp@autoadjustwidth}
+   \end{figure}
+    \__snp_placemarginal{}{}
+  }
+%    \end{macrocode}
+%
+% \begin{environment}{table*}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\RenewDocumentEnvironment{table*}{O{htbp} }
+%    \end{macrocode}
+% \end{environment}
+%
+%    \begin{macrocode}
+{
+    \begin{table}[#1]
+    \begin{@snp@autoadjustwidth}{}{\l@snp@extrawidth}
+    \if@twoside
+        \__snp_isoddpage{\raggedright}{\raggedleft}
+        \__snp_isoddpage
+           {\captionsetup{margin={0pt,0pt}}  }
+           {\captionsetup{margin={-\l@snp@extrawidth,\l@snp@extrawidth}}  }
+    \else
+       \raggedright \captionsetup{margin={0pt,0pt}}
+    \fi
+}
+{ % end part
+    \end{@snp@autoadjustwidth}
+    \end{table}
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\sidecite}
+% ***********************************************************
+%
+%
+%    \begin{macrocode}
+\NewDocumentCommand \sidecite {o o o d<> d() m }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+   { \IfNoValueOrEmptyTF{#2}
+      { \IfNoValueOrEmptyTF{#3}
+        {\sidenote[#1]<#4>(#5){\fullcite{#6}}}
+        {\sidenote[#1]<#4>(#5){\fullcite[#3]{#6}}}
+      }
+      { \IfNoValueOrEmptyTF{#3}
+        {\sidenote[#1]<#4>(#5){\fullcite[#2]{#6}}}
+        {\sidenote[#1]<#4>(#5){\fullcite[#2][#3]{#6}}}
+      }
+   }
+%    \end{macrocode}
+%
+% \begin{macro}{\sidecitet}
+%    \begin{macrocode}
+\NewDocumentCommand \sidecitet {o o o d<> d() m }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+   { \IfNoValueOrEmptyTF{#2}
+      { \IfNoValueOrEmptyTF{#3}
+        { \citeauthor{#6}\sidenote[#1]<#4>(#5){\fullcite{#6}}  }
+        { \citeauthor{#6}\sidenote[#1]<#4>(#5){\fullcite[#3]{#6}}  }
+      }
+      { \IfNoValueOrEmptyTF{#3}
+        { \citeauthor{#6}\sidenote[#1]<#4>(#5){\fullcite[#2]{#6}}  }
+        { \citeauthor{#6}\sidenote[#1]<#4>(#5){\fullcite[#2][#3]{#6}}  }
+      }
+   }
+%    \end{macrocode}
+%
+% \begin{macro}{\sidecitets}
+%    \begin{macrocode}
+\NewDocumentCommand \sidecitets {o o o d<> d() m }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+   { \IfNoValueOrEmptyTF{#2}
+      { \IfNoValueOrEmptyTF{#3}
+        { \citeauthor{#6}'s\sidenote[#1]<#4>(#5){\fullcite{#6}}  }
+        { \citeauthor{#6}'s\sidenote[#1]<#4>(#5){\fullcite[#3]{#6}}  }
+      }
+      {\IfNoValueOrEmptyTF{#3}
+        { \citeauthor{#6}'s\sidenote[#1]<#4>(#5){\fullcite[#2]{#6}}  }
+        { \citeauthor{#6}'s\sidenote[#1]<#4>(#5){\fullcite[#2][#3]{#6}}  }
+      }
+   }
+\ExplSyntaxOff
+%    \end{macrocode}
+% ***********************************************************
+%
+%  Different odd and even marginparsep
+%
+%  this solution from https://tex.stackexchange.com/questions/27518/
+%%
+%
+\makeatletter
+% ****************************************************************
+
+%    \begin{macrocode}
+\newlength\@snp@marginparsepodd
+\setlength{\@snp@marginparsepodd}{\marginparsep}
+\newlength\@snp@marginparsepeven
+\setlength{\@snp@marginparsepeven}{\marginparsep-\@snp@marginsepdiff}
+\patchcmd{\@addmarginpar}
+         {\mph@orig@addmarginpar}
+         {\if@twoside\ifodd\c@page\relax
+              \marginparsep=\@snp@marginparsepodd
+            \else
+              \marginparsep=\@snp@marginparsepeven
+            \fi
+          \else
+            \marginparsep=\@snp@marginparsepodd
+          \fi
+          \mph@orig@addmarginpar}
+         {}
+         {\message{Error! Couldn't hook into command
+             `\string\@addmarginpar'}}
+{
+  \def\@snp@patcherr{%
+    \message{Error! Couldn't hook into command `\string\@mn@@@marginnote'}}
+  \def\@snp@patchok{%
+    \let\@snp@patcherr\relax
+    \@snp@patch
+  }
+  \def\@snp@patch{
+    \patchcmd{\@mn@@@marginnote}
+             {\kern\marginparsep}
+             {\ifx\@mn@currpage\relax\else
+                \if@twoside\ifodd\@mn@currpage\relax
+                    \kern\@snp@marginparsepodd
+                  \else
+                    \kern\@snp@marginparsepeven
+                  \fi
+                \else
+                  \kern\@snp@marginparsepodd
+                \fi
+              \fi}
+             {\message{Patched!}\@snp@patchok}
+             {\@snp@patcherr}
+  }
+  \message{Patching `\string\@mn@@@marginnote`!}
+  \@snp@patch
+  \global\let\@mn@@@marginnote\@mn@@@marginnote
+}
+\makeatother
+\endinput
+%    \end{macrocode}
+
+%
+% \iffalse
+%</package>
+% \fi
+%
+% \Finale
+\endinput
