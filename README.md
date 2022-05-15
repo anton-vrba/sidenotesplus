@@ -1,0 +1,2 @@
+# sidenotesplus
+Latex package: sidenotesplus
