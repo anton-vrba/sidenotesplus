@@ -1,0 +1,353 @@
+\documentclass[twoside,10pt]{article}
+\PassOptionsToPackage{%
+     a4paper,% landscape,%
+     bindingoffset=5mm,%
+     left=20mm,%
+     textwidth=115mm,%
+     marginparsep=10mm,%
+     marginparwidth=50mm,%
+     top=20mm,%
+     bottom=20mm,%
+     headsep=1\baselineskip,%
+     footskip = 2\baselineskip,%
+     includeall}   {geometry}%
+\usepackage  {geometry}
+\usepackage[alerton]{sidenotesplus}
+
+\RequirePackage[svgnames,dvipsnames]{xcolor}
+\usepackage{lipsum}
+\usepackage{xcolor}
+\setlipsum{%
+  par-before = \begingroup\color{gray},
+  par-after = \endgroup,
+  sentence-before = \begingroup\color{gray},
+  sentence-after = \endgroup
+}
+
+%auto generate the bib file
+\usepackage{filecontents}
+%
+\begin{filecontents}{\jobname.bib}
+@book{Tufte1990,
+	author = {Edward R. Tufte},
+	title = {Envisioning Information},
+	publisher = {Graphics Press},
+	year = {1990},
+	isbn = {0-9613921-1-8}
+}
+
+@book{Tufte2006,
+	author = {Edward R. Tufte},
+	title = {Beautiful Evidence},
+	year = {2006},
+	publisher = {Graphics Press, {LLC}},
+	isbn = {0-9613921-7-7}
+}
+
+@BOOK{bringhurst:2002,
+    title = {{T}he {E}lements of {T}ypographic {S}tyle},
+    publisher = {Hartley \& Marks Publishers},
+    year = {2013},
+    author = {Robert Bringhurst},
+    series = {Version 4.0: 20th Anniversary Edition},
+    address = {Point Roberts, WA, USA}
+    }
+
+@Article{Einstein_1905e,
+  author    = {A. Einstein},
+  journal   = {Annalen der Physik},
+  title     = {Ist die Trägheit eines Körpers von seinem Energieinhalt abhängig?},
+  year      = {1905},
+  number    = {13},
+  pages     = {639--641},
+  volume    = {323},
+  doi       = {10.1002/andp.19053231314},
+  file      = {:Articles/Einstein_1905e - Does the Inertia of a Body Depend upon its Energy-Content_.pdf:PDF;:Articles/Einstein_1905e - Ist Die Trägheit Eines Körpers Von Seinem Energieinhalt Abhängig_.pdf:PDF},
+  groups    = {Relativity},
+  publisher = {Wiley},
+}
+
+\end{filecontents}
+\usepackage{mwe}
+% -- language: English --
+%
+\usepackage[english]{babel}
+% -- biblatex --
+\usepackage[backend=biber,style=nature]{biblatex} % xxx
+% the .bib file with the references
+\addbibresource{\jobname.bib}
+
+
+\usepackage{listings}
+\lstset{
+basicstyle=\sffamily,
+  lineskip=0pt,
+  aboveskip= 3pt,
+  belowskip= 0pt,
+}
+
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{mathabx}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{xspace}
+
+\captionsetup{font=small}  % Requires Package{caption} loaded in sidenoteplus
+
+
+
+
+% Author info
+\title{\textbf{\textsf{sidenotesplus}} Example Pages}
+\author{Anton Vrba}
+
+\date{	\today}
+
+         \PassOptionsToPackage{osf,sc}{mathpazo}%
+         \RequirePackage{mathpazo}
+         \linespread{1.05} % a bit more for Palatino
+
+\let\OldTexttt\texttt
+\renewcommand{\texttt}[1]{\OldTexttt{\color{MidnightBlue}{#1}}}
+
+
+\newcommand{\someimage}[3]{% Width, height, label
+\begin{tikzpicture}[x=1pt,y=1pt]% 4x3
+    \path [fill=black!25] (0,0) rectangle (#1,#2);
+    \draw [thick,black!40]
+        (0,0) -- (#1,#2)
+        (#1,0) -- (0,#2)
+        (0.5*#1,0) -- (0.5*#1,#2)
+        (0,0.5*#2) -- (#1,0.5*#2)
+    ;
+    \path [draw,very thick] (0,0) rectangle (#1,#2);
+     \node at (0.5*#1,0.5*#2) {\sffamily\Huge #3}
+    ;
+\end{tikzpicture}%
+}
+\newcommand \describe \paragraph
+
+
+\begin{document}
+
+
+	\maketitle
+	
+	\begin{abstract}
+		\noindent Here we demonstrate the features of \textsf{sidenotesplus},
+        a \LaTeX\xspace package to manage the margin notes, figures, tables and captions.
+        Also body text can be extended into the margin for wide figures, tables and equation.
+        Twoside symmetry is preserved. For biblatex users, routines for side references are
+        provided.
+	\end{abstract}
+
+Please first read \textsf{sidenotesplus.pdf} for the descriptions and usage of this package.
+This document served as a test platform while developing the package, and uses the standard \verb"article" \LaTeX\xspace class. The above right margin note list the first view lines\sidenote|-200pt|{%
+\ttfamily\upshape\textbackslash documentclass[twoside,10pt]\textbraceleft article\textbraceright\\
+\textbackslash PassOptionsToPackage\textbraceleft\\
+\makebox[2ex]{} a4paper,\\
+\makebox[2ex]{} bindingoffset=5mm,\\
+\makebox[2ex]{} left=20mm,\\
+\makebox[2ex]{} textwidth=115mm,\\
+\makebox[2ex]{} marginparsep=10mm,\\
+\makebox[2ex]{} marginparwidth=50mm,\\
+\makebox[2ex]{} top=20mm, bottom=20mm,\\
+\makebox[2ex]{} headsep=1\textbackslash baselineskip,\\
+\makebox[2ex]{} footskip = 2\textbackslash baselineskip,\\
+\makebox[2ex]{} includeall\textbraceright   \textbraceleft geometry\textbraceright\\
+\textbackslash usepackage  \textbraceleft geometry\textbraceright\\
+\textbackslash usepackage[alerton]\textbraceleft sidenotesplus\textbraceright\\
+} of the document preamble
+
+
+
+\begin{equation} \label{eq:123}
+  a=b\quad \text{see\sidenote<0em>{test} }
+\end{equation}
+was codedcoded \verb+a=b\quad\text{see\sidenote<0em>!Red!{test}}+. in \eqref{eq:123} Important here is the option \verb/<0em>/.
+
+~
+
+testing sidenotetext* \sidenotetext*{ A sidenotetext without a mark. Also testing if the command \emph{sidepar} works.
+\sidepar And here we have a new paragraph. And here we have a new paragraph. And here we have a new paragraph}
+
+~
+
+\newpage
+Testing sidenote*[]\sidenote*|-1.1em|{test up}\sidenote*{test ---}\sidenote*|1.1em|{test down}
+
+~
+
+
+
+Similar to \verb"\footnotemark"  and \verb"\footnotetext" the macros \verb"\sidenotemark" \verb"\sidenotetext" and \verb"\sidenotetextbefore" are provided, the latter two have the same options as \verb"\sidenote". This is useful in placing margin notes in environments \sidecitet|-20pt|!Red!{bringhurst:2002} where the \verb"\sidenode" is not \sidecite
+{Einstein_1905e} permitted.
+
+\begin{margintable}
+\upshape
+\begin{tabularx}{\marginparwidth}{c X}
+ \hline
+ \multicolumn{2}{c}{Long Table Heading}\\
+ Item&Description\\
+ \hline
+ one& The width of this column depends on the
+ width of the table.\\
+ \hline
+ \end{tabularx}
+ \vskip-1ex
+ \caption{Some description \label{mtable1}}
+\end{margintable}
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\marginparwidth}{c X}
+ \hline
+ \multicolumn{2}{c}{Long Table Heading}\\
+ Item&Description\\
+ \hline
+ one& The width of this column depends on the
+ width of the table.\\
+ \hline
+ \end{tabularx}
+ \vskip-1ex
+ \caption{Some description \label{mtable1}}
+\end{table}
+The margin note  is not positioned by the \verb"\sidenotemark", but rather it is positioned relative\sidealert{Alarm it is burning} to \verb"\sidenotetext" and \verb"\sidenotetextbefore"
+
+
+
+
+
+\noindent A \LaTeX\xspace \verb"\par" command in the margin text throws an error. The command \verb"\sidepar" renders a new paragraph\sidenote{\lipsum[1][2]} in the margin note.
+
+~
+
+
+In the \verb"figure" or \verb"table" environment the command caption can be replaced with \verb"sidecaption"\\\noindent\verb"\sidecaption*<offset>[short caption]{long caption}"\newline
+Use \verb|\raggedouter| to align figures, or tables, to the outer margin. The caption does not float and is fixed relative to the figure, the \verb"offset" is used to fine tune the placing of the caption relative to the figure.  Hint: short remarks, or notes, to the figure can now be be placed in the margin by using the starred version \verb"sidecaption*<offset>{A note}".
+
+\newpage
+
+\listoffigures
+\newlength \ghostheight
+\newsavebox{\ghostbox}
+\definecolor{transparant}{cmyk}{0,0,0,0}
+\NewDocumentCommand\ghost{+m}
+{
+  \savebox{\ghostbox}[\textwidth]
+  {
+    \begin{minipage}{\textwidth}
+       \captionsetup{font={color=transparant}} #1
+    \end{minipage}
+  }
+  \settoheight{\ghostheight}{\fbox{\usebox{\ghostbox}}}
+  \setlength{\ghostheight}{1em-\ht\ghostbox-\dp\ghostbox}
+  \usebox{\ghostbox}\vskip\ghostheight
+}
+
+\newpage
+\subsection*{Figure demonstration page A}
+\begin{figure}[h]
+\centering
+    \someimage{0.75*\textwidth}{80pt}{A}%
+    \ghost{\caption{Short ghost caption Short ghost caption Short ghost caption Short ghost caption    }}
+        and some text and some text
+    \label{imageA}
+\end{figure}
+
+\lipsum[3][4-8]\par\lipsum[7][4-9]
+
+\begin{figure}[h]
+\centering
+    \someimage{0.75*\textwidth}{80pt}{B}%
+    \caption[Long caption] {\emph{Long caption} \lipsum[3][1-3]}
+    \label{imageB}
+\end{figure}
+
+\begin{marginfigure}|-500pt|%
+    \someimage{\marginparwidth}{80pt}{M(ap)}%%
+    \margincaption{ MMMPPP A small rectangle put in the margin.\label{rectangle1}}%
+\end{marginfigure}%
+\begin{marginfigure}|-500pt|%
+    \someimage{\marginparwidth}{80pt}{M(b)}%%
+    \margincaption[but a short entry]{Second margin figure with a very long label to take many lines.\label{rectangle2}}%
+\end{marginfigure}%
+
+\begin{marginfigure}|-500pt|%
+    \someimage{\marginparwidth}{80pt}{M(c)}%%
+    \margincaption{Third margin figure.\label{rectangle3}}%
+\end{marginfigure}%
+
+AAA\sidenote{TEST}
+
+\begin{figure}[h]
+\raggedinner
+    \sidecaption[Side caption]{\emph{Side caption} with raggedinner command in figure ennvironment}
+    \label{imageD}
+    \someimage{0.75*\textwidth}{80pt}{D}%
+\end{figure}
+
+This is body text, the caption for above figure is in the marginpar.
+
+\begin{figure*}[h]
+\centering
+    \someimage{\linewidth}{100pt}{Full width figure}%
+    \caption[Full width] {\emph{Full width} \lipsum[12][1-5]}
+    \label{imagefw}
+\end{figure*}
+\lipsum[3][4-8]%\par\lipsum[7][4-9]
+\newpage
+\subsection*{Figure demonstration page B}
+\begin{figure}[h]
+\centering
+    \someimage{0.75*\textwidth}{80pt}{A}%
+    \caption{Short caption}
+    \label{imageA2}
+\end{figure}
+
+\lipsum[3][4-8]\par\lipsum[7][4-9]
+
+\begin{figure}[h]
+\centering
+    \someimage{0.75*\textwidth}{80pt}{B}%
+    \caption[Long caption] {\emph{Long caption} \lipsum[3][1-3]}
+    \label{imageB2}
+\end{figure}
+
+\begin{marginfigure}|-500pt|%
+    \someimage{\marginparwidth}{80pt}{M(a)}%%
+    \margincaption{A small rectangle put in the margin.\label{rectangle1.2}}%
+\end{marginfigure}%
+\begin{marginfigure}|-500pt|%
+    \someimage{\marginparwidth}{80pt}{M(b)}%%
+    \margincaption{Second margin figure.\label{rectangle2.2}}%
+\end{marginfigure}%
+
+\begin{marginfigure}|-500pt|%
+    \someimage{\marginparwidth}{80pt}{M(c)}%%
+    \margincaption{Third margin figure.\label{rectangle2.3}}%
+\end{marginfigure}%
+
+BBB\sidenote{TEST}
+
+\begin{figure}[h]
+\raggedinner
+    \sidecaption{\emph{Side caption} with raggedinner command in figure ennvironment}
+    \label{imageD2}
+    \someimage{0.75*\textwidth}{80pt}{D}%
+\end{figure}
+
+This is body text, the caption for above figure is in the marginpar.
+
+\begin{figure*}[h]
+\centering
+    \someimage{\linewidth}{100pt}{Full width figure}%
+    \caption[Full width] {\emph{Full width} \lipsum[12][1-5]}
+    \label{imageFW2}
+\end{figure*}
+\lipsum[3][4-8]%\par\lipsum[7][4-9]
+
+
+
+\end{document}
