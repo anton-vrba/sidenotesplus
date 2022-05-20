@@ -1,0 +1,723 @@
+%%
+%% This is file `sidenotesplus.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% sidenotesplus.dtx  (with options: `package')
+%% 
+%%  Copyright (C) 2022 by Anton Vrba
+%%  --------------------------------
+%% 
+%%  This work may be distributed and/or modified under the
+%%  conditions of the LaTeX Project Public License, either version 1.3
+%%  of this license or (at your option) any later version.
+%%  The latest version of this license is in
+%%     http://www.latex-project.org/lppl.txt
+%%     and version 1.3c or later is part of all distributions of LaTeX
+%%     version 2008-05-04 or later.
+%% 
+%% 
+%%  This work has the LPPL maintenance status `maintained'.
+%% 
+%%  The Current Maintainer of this work is Anton Vrba.
+%% 
+%% 
+\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+\ProvidesPackage{sidenotesplus}
+    [2022/05/20 1.00 rich text marginal notes, tables and figures ]
+\RequirePackage{marginnote} % provides an offset option for the marginals instead of a float
+\RequirePackage{caption} % handles the captions (in the margin)
+\RequirePackage{xparse} % new LaTeX3 syntax to define macros and environments
+\RequirePackage{calc}
+\RequirePackage{etoolbox} % provides \patchcmd
+\RequirePackage{l3keys2e}
+\RequirePackage{ifoddpage}
+\RequirePackage{mparhack} % get marginpar right
+\RequirePackage{xspace}
+\RequirePackage[strict]{changepage}
+%%
+%% ~
+
+\newcommand \snptest {{\upshape Figure \thefigure:} And some text\xspace}
+
+\ExplSyntaxOn
+\DeclareExpandableDocumentCommand{\IfNoValueOrEmptyTF}{ m m m }
+{
+ \IfNoValueTF{#1}
+  {#2}
+  {\tl_if_empty:nTF {#1} {#2} {#3}}
+}
+\setcounter{topnumber}{4}
+\setcounter{bottomnumber}{4}
+\setcounter{totalnumber}{8}
+\NewDocumentCommand \snp@sidenoteformat {} {%
+   \snp@size\snp@shape\snp@font\leavevmode%
+   \lineskip=0pt \lineskiplimit=0pt %
+   \tolerance=2000 \hyphenpenalty=300 \exhyphenpenalty=300%
+   \doublehyphendemerits=100000%
+   \finalhyphendemerits=\doublehyphendemerits
+   }
+\NewDocumentCommand \snp@sideformat {} {}
+\NewDocumentCommand \snp@sidecolor {} {}
+
+\NewDocumentCommand \snp@symbol {} {\alph}
+\NewDocumentCommand \snp@alertsymbol {} {\arabic}
+\NewDocumentCommand \snp@font {} {}
+\NewDocumentCommand \snp@shape{} {\itshape}
+\NewDocumentCommand \snp@size {} {\footnotesize}
+\NewDocumentCommand \snp@leftmarginstyle{} {}
+\NewDocumentCommand \snp@rightmarginstyle{} {}
+\bool_new:N \l@snp@margincaption
+\bool_new:N \l@snp@alerton
+\bool_new:N \l@snp@alertmarkon
+\bool_new:N \l@snp@ragged
+\bool_new:N \l@snp@symmetric
+\bool_new:N \l@snp@page
+
+\bool_set_false:N \l@snp@margincaption
+\bool_set_false:N \l@snp@alerton
+\bool_set_false:N \l@snp@alertmarkon
+\bool_set_false:N \l@snp@ragged
+\bool_set_true:N \l@snp@symmetric
+
+\newlength{\snp@marginsepdiff}
+\setlength{\snp@marginsepdiff}{1ex}
+
+\keys_define:nn { sidenoteplus }
+{
+ mark .code:n = \str_case:nn {#1}%
+     {  {fnsymbol}{\RenewDocumentCommand \snp@symbol {}{\fnsymbol}}%
+        {Alph}{\RenewDocumentCommand \snp@symbol {}{\Alph}}%
+        {arabic}{\RenewDocumentCommand \snp@symbol {}{\arabic}
+                 \RenewDocumentCommand \snp@alertsymbol {} {\alph}}%
+        {Roman}{\RenewDocumentCommand \snp@symbol {}{\Roman}}%
+        {roman}{\RenewDocumentCommand \snp@symbol {}{\roman}}%
+        {Other}{}  },
+ font .code:n = \str_case:nn {#1}%
+      {  {sf}{\RenewDocumentCommand \snp@font {}{\sffamily}}%
+        {Other}{} },
+ size .code:n = \str_case:nn {#1}%
+      {  {small}{\RenewDocumentCommand \snp@size {}{\small}}%
+         {script}{\RenewDocumentCommand \snp@size {}{\scriptsize}}%
+         {normal}{\RenewDocumentCommand \snp@size {}{\normalsize}}%
+        {Other}{} },
+ shape .code:n = \str_case:nn {#1}%
+      {  {sl}{\RenewDocumentCommand \snp@shape{}{\slshape}}%
+         {up}{\RenewDocumentCommand \snp@shape{}{\upshape}}%
+         {it}{\RenewDocumentCommand \snp@shape{}{\itshape}}%
+        {Other}{} },
+ sepdiff .code:n = \setlength{\snp@marginsepdiff}{#1},
+ classic .code:n = \bool_set_false:N \l@snp@symmetric,
+ ragged .code:n = { \RenewDocumentCommand \snp@leftmarginstyle {}{\raggedleft}
+                    \RenewDocumentCommand \snp@rightmarginstyle {}{\raggedright}
+                    \bool_set_true:N \l@snp@ragged  },
+ alerton .code:n = {\bool_set_true:N \l@snp@alerton},
+}
+\ProcessKeysOptions { sidenoteplus }
+\bool_if:NTF \l@snp@ragged
+     {\setlength{\snp@marginsepdiff}{0pt} \bool_set_false:N \l@snp@symmetric}
+     {\relax}
+\bool_if:NTF \l@snp@symmetric {\setlength{\snp@marginsepdiff}{0pt}}{\relax}
+ \newcounter{sidenote}[page] % make a counter
+\setcounter{sidenote}{0} % init the counter
+ \newcounter{sidealert}[page] % make a counter
+\setcounter{sidealert}{0} % init the counter
+\NewDocumentCommand \snp@putmarkintext { m }
+{
+    \leavevmode
+    \ifhmode
+        \edef \x@sf {\the \spacefactor }
+        \nobreak
+    \fi
+    \bool_if:NTF \l@snp@alertmarkon
+    {\makebox[0pt]{\raisebox{0.3ex}{\textsuperscript {\normalfont \bf ---~{#1}~---\kern-0.6ex }}}}
+    {\hbox {\textsuperscript {\normalfont #1 }}}
+    \ifhmode
+        \spacefactor \x@sf
+    \fi
+    \relax
+}
+\NewDocumentCommand \snp@multisign { } {3sp}
+\NewDocumentCommand \snp@multimarker { }
+{
+  \kern-\snp@multisign
+  \kern\snp@multisign\relax
+}
+\NewDocumentCommand \snp@multichecker { }
+{
+  \dim_compare:nNnTF \lastkern = \snp@multisign
+  {\snp@putmarkintext{,}}
+  {}
+}
+\NewDocumentEnvironment{@snp@llr} {}%
+{
+  \setlength{\parindent}{0pt}
+  \setlength{\leftskip}{0pt plus 1fil}
+  \setlength{\rightskip}{0pt plus -1fil}
+}{\par}
+\let\oldmarginpar\marginpar
+\renewcommand{\marginpar}[2][]{
+   \if\relax\detokenize{#1}\relax
+      \oldmarginpar[\snp@leftmarginstyle\snp@sidenoteformat{#2}]%
+                   {\snp@rightmarginstyle\snp@sidenoteformat{#2}}%
+   \else%two parameters, let them use their styling
+      \oldmarginpar[{#1}]{#2}%
+   \fi%
+}
+\renewcommand*{\raggedleftmarginnote}{}
+\renewcommand*{\raggedrightmarginnote}{}
+\renewcommand*{\marginfont}{}
+
+\NewDocumentCommand \snp@placemarginal {d!! m m }
+{
+   \IfNoValueOrEmptyTF{#1}
+   {
+     \if@twoside
+        \snp@isoddpage
+        {
+           \IfNoValueOrEmptyTF{#2}
+           {\marginpar{  #3 }}
+           {\marginnote{\snp@sidenoteformat #3}[#2]}
+        }
+        {
+        \bool_if:NTF \l@snp@symmetric
+        {
+           \IfNoValueOrEmptyTF{#2}
+           {\marginpar{\begin{@snp@llr} #3\end{@snp@llr}}}
+           {\marginnote{\begin{@snp@llr}\snp@sidenoteformat #3\end{@snp@llr}}[#2]}
+        }
+
+        {
+           \IfNoValueOrEmptyTF{#2}
+           {\marginpar{ #3}}
+           {\marginnote{\snp@sidenoteformat #3}[#2]}
+        }
+        }
+     \else
+        \IfNoValueOrEmptyTF{#2}
+        {\marginpar{ #3}}
+        {\marginnote{\snp@sidenoteformat #3}[#2]}
+     \fi
+   }
+   {
+     \if@twoside
+        \snp@isoddpage
+        {
+           \IfNoValueOrEmptyTF{#2}
+           {\marginpar{  \textcolor{#1}{#3} }}
+           {\marginnote{\snp@sidenoteformat  \textcolor{#1}{#3}}[#2]}
+        }
+        {
+        \bool_if:NTF \l@snp@symmetric
+        {
+           \IfNoValueOrEmptyTF{#2}
+           {\marginpar{\begin{@snp@llr} \textcolor{#1}{#3}\end{@snp@llr}}}
+           {\marginnote{\begin{@snp@llr}\snp@sidenoteformat  \textcolor{#1}{#3}\end{@snp@llr}}[#2]}
+        }
+        {
+           \IfNoValueOrEmptyTF{#2}
+           {\marginpar{\textcolor{#1}{#3}}}
+           {\marginnote{ \snp@sidenoteformat  \textcolor{#1}{#3}}[#2]}
+        }
+        }
+     \else
+        \IfNoValueOrEmptyTF{#2}
+        {\marginpar{ \textcolor{#1}{#3}}}
+        {\marginnote{ \snp@sidenoteformat  \textcolor{#1}{#3}}[#2]}
+     \fi
+   }
+}
+\NewDocumentCommand \sidepar {}
+{
+  \\\makebox[1em]{}
+}
+\NewDocumentCommand \sidenote {s d|| d<> d() d!! m  }
+{
+  \IfBooleanTF{#1}
+  { % starred
+  \snp@sidenotemark*(#4)
+  \snp@sidenotetext[*]|#2|<#3>(#4)!#5!{#6}
+  }{ % unstarred
+\IfNoValueOrEmptyTF{#5} {
+  \snp@sidenotemark(#4)
+  \snp@sidenotetext[]|#2|<#3>(#4)!#5!{#6}
+  \snp@multimarker }
+  {
+  \snp@sidenotemark(#4)!#5!
+  \snp@sidenotetext[]|#2|<#3>(#4)!#5!{#6}
+  \snp@multimarker }
+
+  }
+}
+\NewDocumentCommand \sidealert {s d|| d<> d() d!! m  }
+{
+   \bool_if:NTF \l@snp@alerton
+     {
+     \bool_set_true:N \l@snp@alertmarkon
+      \IfNoValueOrEmptyTF{#5}
+      {
+        \IfBooleanTF{#1}
+        { % starred
+          \snp@sidenotemark*(#4)
+          \snp@sidenotetext[*]|#2|<#3>(#4)!Red!{#6}
+        }{ % unstarred
+          \snp@sidenotemark(#4)!Red!{}
+          \snp@sidenotetext[]|#2|<#3>(#4)!Red!{#6}
+          \snp@multimarker
+        }
+      }{ \IfBooleanTF{#1}
+         { % starred
+           \snp@sidenotemark*(#4)
+           \snp@sidenotetext[*]|#2|<#3>(#4)!#5!{#6}
+         }{ % unstarred
+           \snp@sidenotemark(#4)!#5!{}
+           \snp@sidenotetext[]|#2|<#3>(#4)!#5!{#6}
+           \snp@multimarker
+         }
+      }
+   }
+   {\relax}
+   \bool_set_false:N \l@snp@alertmarkon
+}
+\NewDocumentCommand \sidenotemark {s d() d!! m }
+{
+  \IfBooleanTF{#1}
+  { % starred
+    \relax}
+  {% unstarred
+     \IfNoValueOrEmptyT{#3}
+       {\snp@sidenotemark (#2)}
+       {\snp@sidenotemark !#3!( #2)}
+  }
+  \xspace
+}
+\NewDocumentCommand \snp@symbolnoteoralert {}{}
+\NewDocumentCommand \snp@sidenotemark {s d() d!! }
+{
+  \IfBooleanTF{#1}
+  { % starred
+    \relax}
+  {% unstarred
+     \snp@multichecker
+     \bool_if:NTF \l@snp@alertmarkon
+        { \refstepcounter{sidealert}
+          \RenewDocumentCommand \snp@symbolnoteoralert {}{\snp@alertsymbol{sidealert}} }
+       { \refstepcounter{sidenote}
+          \RenewDocumentCommand \snp@symbolnoteoralert {}{\snp@symbol{sidenote}} }
+     \IfNoValueOrEmptyTF{#3}
+     {
+       \IfNoValueOrEmptyTF{#2}
+         { \snp@putmarkintext{\snp@symbolnoteoralert } }
+         { \snp@putmarkintext{#2} }
+     }{
+        \IfNoValueOrEmptyTF{#2}
+          { \textcolor{#3} {\snp@putmarkintext{\snp@symbolnoteoralert}} }
+          { \textcolor{#3} {\snp@putmarkintext{#2}} }
+     }
+     \snp@multimarker
+  }
+}
+\NewDocumentCommand{\snp@onelineup}{}
+   {\par \vspace*{-1\baselineskip}}
+\NewDocumentCommand{\snp@onexlineup}{}
+   {\par \vspace*{-1.5\baselineskip}}
+\NewDocumentCommand{\snp@leftnotelabel}{ m }
+   {\makebox[0em][l]{\hspace*{0.9ex}#1}}
+\NewDocumentCommand{\snp@rightnotelabel}{ m }
+   {\makebox[0em][r]{#1\hspace*{0.9ex}}}
+\NewDocumentCommand{\snp@justifiedleftnotelabel}{ m }
+   {\makebox[0em][l]{\hspace*{\marginparwidth+0.9ex}#1}}
+\NewDocumentCommand \sidenotetext {s d|| d<> d() d!! m  } {
+   \IfBooleanTF{#1}
+      { \snp@sidenotetext[*]|#2|<#3>(#4)!#5!{#6} }
+      { \snp@sidenotetext[]|#2|<#3>(#4)!#5!{#6} }
+}
+\NewDocumentCommand \sidenotetextbefore {s d|| d<> d() d!! m  } {
+   \refstepcounter{sidenote}
+   \IfBooleanTF{#1}
+      { \snp@sidenotetext[*]|#2|<#3>(#4)!#5!{#6} }
+      { \snp@sidenotetext[]|#2|<#3>(#4)!#5!{#6} }
+    \addtocounter{sidenote}{-1}
+}
+\DeclareExpandableDocumentCommand{\IfsTF}{ m m m }
+{
+ \IfNoValueTF{#1}
+  {#2}
+  {\tl_if_empty:nTF {#1} {#2} {#3}}
+}
+ \newlength{\d@snp@offset}
+\NewDocumentCommand \snp@sidenotesymbol {}{}
+\NewDocumentCommand \snp@sidenotetext {o d|| d<> d() d!! m } {
+  \bool_if:NTF \l@snp@alertmarkon
+  {
+  \IfNoValueOrEmptyTF{#4}
+     {\RenewDocumentCommand \snp@sidenotesymbol {}{-~\snp@alertsymbol{sidealert}~-}}
+     {\RenewDocumentCommand \snp@sidenotesymbol {}{-~#4~-}}
+  }
+  {
+  \IfNoValueOrEmptyTF{#4}
+     {\RenewDocumentCommand \snp@sidenotesymbol {}{\snp@symbol{sidenote}}}
+     {\RenewDocumentCommand \snp@sidenotesymbol {}{#4}}
+  }
+  \IfNoValueOrEmptyTF{#2}
+     {\relax}
+     {\setlength{\d@snp@offset}{#2} \vspace*{ \d@snp@offset }}
+   \bool_if:NTF \l@snp@ragged
+   {
+   \if@twoside
+     \snp@isoddpage
+     {%odd page
+       {  \snp@placemarginal!#5!{#3}%--
+              {\snp@rightnotelabel{%
+                  \normalfont\IfsTF{#1}{\snp@sidenotesymbol}{\relax}}#6}
+       }
+     }
+     {%even page
+        {\snp@placemarginal!#5!{#3}%--
+             {\snp@justifiedleftnotelabel{\normalfont%
+                    \IfsTF{#1}{\snp@sidenotesymbol}{\relax}}
+                    \hspace*{\marginparwidth}  \snp@onelineup#6}
+        }
+     }
+   \else %not twoside
+     {\snp@placemarginal!#5!{#3}%--
+          {\snp@rightnotelabel{\normalfont%
+              \IfsTF{#1}{\snp@sidenotesymbol}{\relax}}#6}
+     }
+   \fi % ends if@twoside
+   }
+   {
+   \if@twoside
+     \snp@isoddpage
+     {%odd page
+          {\snp@placemarginal!#5!{#3}%--
+               {\snp@rightnotelabel{
+                   \normalfont\IfsTF{#1}{\snp@sidenotesymbol}{\relax}}#6}
+          }
+     }
+     {%even page
+        \bool_if:NTF \l@snp@symmetric
+           {
+             {\snp@placemarginal!#5!{#3}%--
+                  {\snp@justifiedleftnotelabel{
+                         \normalfont\IfsTF{#1}{\snp@sidenotesymbol}{\relax} }
+                   \hspace*{\marginparwidth}\snp@onelineup#6
+                  }
+             }
+          }
+          {
+             {  \snp@placemarginal!#5!{#3}%--
+                    {\snp@rightnotelabel{
+                      \normalfont\IfsTF{#1}{\snp@sidenotesymbol}{\relax}}#6 }
+             }
+          }
+     }
+   \else
+       {   \snp@placemarginal!#5!{#3}%--
+           {\snp@rightnotelabel{
+               \normalfont\IfsTF{#1}{\snp@sidenotesymbol}{\relax}}#6}
+       }
+   \fi
+   }
+  \IfNoValueOrEmptyTF{#2}
+     {\relax}
+     { \setlength{\d@snp@offset}{#2 *(-1)} \vspace*{{\d@snp@offset}}}
+}
+
+\NewDocumentCommand \snp@raggedcaption {m }
+{
+   \if@twoside
+      \snp@isoddpage {#1}
+         {\bool_if:NTF \l@snp@symmetric {\begin{@snp@llr}#1\end{@snp@llr}} {#1}}
+   \else #1 \fi
+}
+\DeclareCaptionStyle{sidecaption}{font=footnotesize}
+\NewDocumentCommand \snp@entrycap {} {}
+\NewDocumentCommand \snp@offsetcap {} {}
+\NewDocumentCommand \sidecaption {s d|| d<> d!! o m} {
+  \captionsetup{style=sidecaption}
+  \IfBooleanTF{#1}
+  { %starred
+  \marginnote{\caption*{\snp@raggedcaption{#6}}}
+          [\IfNoValueOrEmptyTF{#3} {0pt} {#3}]
+  }
+  { %unstarred
+  \marginnote{\caption[\IfNoValueOrEmptyTF{#5} {#6} {#5}]
+                      {\snp@raggedcaption{#6}}}
+          [\IfNoValueOrEmptyTF{#3} {0pt} {#3}]
+  }
+}
+\NewDocumentCommand \istwosided {m m} {
+\if@twoside #1 \else #2 \raggedleft \fi
+}
+\NewDocumentCommand \raggedinner {} {
+\if@twoside
+     \snp@isoddpage {\raggedleft}{\raggedright}
+\else
+     \raggedleft
+\fi
+}
+\NewDocumentCommand \raggedouter {} {
+\if@twoside
+     \snp@isoddpage {\raggedright}{\raggedleft}
+\else
+     \raggedleft
+\fi
+}
+
+\newlength \l@snp@belowcaption
+\NewDocumentCommand \margincaption {s o m }
+{
+\setlength \l@snp@belowcaption \belowcaptionskip
+\setlength{\belowcaptionskip}{1ex plus 0.3ex minus -0.1ex}
+  \IfBooleanTF{#1}
+  { %starred
+    \if@twoside
+        \snp@isoddpage
+        {
+          \IfNoValueOrEmptyTF{#2} {\caption*{#3}} {\caption*[#2]{#3}}
+        }
+        {
+        \bool_if:NTF \l@snp@symmetric
+        {
+          \IfNoValueOrEmptyTF{#2}
+            {\caption*[#3]{\begin{@snp@llr}#3\end{@snp@llr}}}
+            {\caption*[#2]{\begin{@snp@llr}#3\end{@snp@llr}}}
+        }
+        {
+           \IfNoValueOrEmptyTF{#2} {\caption*{#3}} {\caption*[#2]{#3}}
+        }
+        }
+    \else
+        \IfNoValueOrEmptyTF{#2} {\caption*{#3}} {\caption*[#2]{#3}}
+    \fi
+  }
+  { %unstarred
+    \if@twoside
+        \snp@isoddpage
+        {
+          \IfNoValueOrEmptyTF{#2} {\caption{#3}} {\caption[#2]{#3}}
+        }
+        {
+        \bool_if:NTF \l@snp@symmetric
+        {
+          \IfNoValueOrEmptyTF{#2}
+            {\caption[#3]{\begin{@snp@llr}#3\end{@snp@llr}}}
+            {\caption[#2]{\begin{@snp@llr}#3\end{@snp@llr}}}
+        }
+        {
+           \IfNoValueOrEmptyTF{#2} {\caption{#3}} {\caption[#2]{#3}}
+        }
+        }
+    \else
+        \IfNoValueOrEmptyTF{#2} {\caption{#3}} {\caption[#2]{#3}}
+    \fi
+  }
+\setlength \belowcaptionskip \l@snp@belowcaption
+}
+
+ \newsavebox{\b@snp@marginfigurebox}
+\DeclareCaptionStyle{marginfigure}{font=footnotesize,skip=1ex}
+\NewDocumentEnvironment{marginfigure} { d|| d<> }
+{ % begin{} part
+  \begin{lrbox}{\b@snp@marginfigurebox}
+    \begin{minipage}{\marginparwidth}
+      \captionsetup{type=figure,style=marginfigure}
+}
+{ % end{} part
+    \end{minipage}%
+  \end{lrbox}%
+
+   \IfNoValueOrEmptyTF{#1}
+      {\relax}
+      {\setlength{\d@snp@offset}{#1} \vspace*{ \d@snp@offset }}
+  \snp@placemarginal{#2}{\usebox{\b@snp@marginfigurebox} }
+  %~\snp@onexlineup \snptest }
+  \IfNoValueOrEmptyTF{#1}
+     {\relax}
+     { \setlength{\d@snp@offset}{#1 *(-1)} \vspace*{{\d@snp@offset}}}
+}
+\newsavebox{\b@snp@margintablebox}
+\DeclareCaptionStyle{margintable}{font=footnotesize}
+\NewDocumentEnvironment{margintable} { d|| d<> d() }
+{ % begin part
+  \begin{lrbox}{\b@snp@margintablebox}
+     \snp@sidenoteformat
+    \begin{minipage}{\marginparwidth}
+      \captionsetup{type=table,style=margintable}
+}
+{ % end part
+    \end{minipage}
+  \end{lrbox}
+   \IfNoValueOrEmptyTF{#1}
+      {\relax}
+      {\setlength{\d@snp@offset}{#1} \vspace*{ \d@snp@offset }}
+  \snp@placemarginal{#2}{\usebox{\b@snp@margintablebox} }
+  \IfNoValueOrEmptyTF{#1}
+    {\relax}
+    {\setlength{\d@snp@offset}{#1 *(-1)} \vspace*{{\d@snp@offset}}}
+
+}
+\AtBeginDocument{%
+\newlength{\d@snp@extrawidth}
+\setlength{\d@snp@extrawidth}{\marginparwidth}
+\addtolength{\d@snp@extrawidth}{\marginparsep}  }
+\NewDocumentCommand \snp@isoddpage {m m}
+      { \checkoddpage\ifoddpage #1 \else #2 \fi }
+\NewDocumentEnvironment{@snp@autoadjustwidth}{ m m }%
+{ % begin part
+\begin{adjustwidth}{0pt}{0pt}
+  \if@twoside
+     \snp@isoddpage{\begin{adjustwidth}{#1}{-#2}}%
+        {\begin{adjustwidth}{-#2}{#1}}
+  \else
+     \begin{adjustwidth}{#1}{-#2}
+  \fi
+}
+{ % end part
+   \end{adjustwidth}\end{adjustwidth}
+}
+\NewDocumentEnvironment{text*}{ o }%
+{ % begin part
+ \begin{adjustwidth}{0pt}{0pt}
+ \IfNoValueOrEmptyTF{#1}
+ {
+  \if@twoside
+     \snp@isoddpage{\begin{adjustwidth}{0pt}{-\d@snp@extrawidth}}%
+        {\begin{adjustwidth}{-\d@snp@extrawidth*}{0pt}}
+  \else
+     \begin{adjustwidth}{0pt}{-\d@snp@extrawidth*}
+  \fi
+  }
+  {
+  \if@twoside
+     \snp@isoddpage{\begin{adjustwidth}{0pt}{-\d@snp@extrawidth*#1}}%
+        {\begin{adjustwidth}{-\d@snp@extrawidth*#1}{0pt}}
+  \else
+     \begin{adjustwidth}{0pt}{-\d@snp@extrawidth*#1}
+  \fi
+  }
+}
+{  % end part
+\end{adjustwidth}\end{adjustwidth} \snp@placemarginal{}{}
+}
+\RenewDocumentEnvironment{figure*}{ O{htbp} }
+{
+   \begin{figure}[#1]
+   \begin{@snp@autoadjustwidth}{}{\d@snp@extrawidth}
+   \begin{minipage}[c]{\linewidth}
+   \centering
+   \captionsetup{ margin={\d@snp@extrawidth/2,\d@snp@extrawidth/2}}
+}{  % end part
+   \end{minipage}
+   \end{@snp@autoadjustwidth}
+   \end{figure}
+    \snp@placemarginal{}{}
+  }
+\RenewDocumentEnvironment{table*}{O{htbp} }
+{
+    \begin{table}[#1]
+    \begin{@snp@autoadjustwidth}{}{\d@snp@extrawidth}
+    \if@twoside
+        \snp@isoddpage{\raggedright}{\raggedleft}
+        \snp@isoddpage
+           {\captionsetup{margin={0pt,0pt}}  }
+           {\captionsetup{margin={-\d@snp@extrawidth,\d@snp@extrawidth}}  }
+    \else
+       \raggedright \captionsetup{margin={0pt,0pt}}
+    \fi
+}
+{ % end part
+    \end{@snp@autoadjustwidth}
+    \end{table}
+}
+\NewDocumentCommand \snp@before {} {}
+\NewDocumentCommand \snp@after {} {}
+\NewDocumentCommand \sidecite {s d|| d<> d() d!! o o m }
+{ \IfNoValueOrEmptyTF{#6}
+  {\RenewDocumentCommand \snp@before {} {}}
+  {\RenewDocumentCommand \snp@before {} {#6}}
+  \IfNoValueOrEmptyTF{#7}
+  {\RenewDocumentCommand \snp@after {} {}}
+  {\RenewDocumentCommand \snp@after {} {#7}}
+  \sidenote|#2|<#3>(#4)!#5!{\upshape\fullcite[\snp@before][\snp@after]{#8}}
+}
+\NewDocumentCommand \sidecitet {s d|| d<> d() d!! o o m }
+{ \IfNoValueOrEmptyTF{#6}
+  {\RenewDocumentCommand \snp@before {} {}}
+  {\RenewDocumentCommand \snp@before {} {#6}}
+  \IfNoValueOrEmptyTF{#7}
+  {\RenewDocumentCommand \snp@after {} {}}
+  {\RenewDocumentCommand \snp@after {} {#7}}
+   \IfBooleanTF{#1}
+   {
+      \citeauthor{#8}'s\sidenote|#2|<#3>(#4)!#5!
+          {\upshape\fullcite[\snp@before][\snp@after]{#8}}
+   }
+   {
+      \citeauthor{#8}\sidenote|#2|<#3>(#4)!#5!
+          {\upshape\fullcite[\snp@before][\snp@after]{#8}}
+   }
+}
+\ExplSyntaxOff
+%%
+\newlength\marginparsepodd
+\newlength\marginparsepeven
+
+\setlength{\marginparsepodd}{\marginparsep}
+\setlength{\marginparsepeven}{\marginparsep-\snp@marginsepdiff}
+
+\makeatletter
+\patchcmd{\@addmarginpar}                 % In this command
+         {\mph@orig@addmarginpar}         % ... replace this...
+         {\if@twoside\ifodd\c@page\relax  % ... with this
+              \marginparsep=\marginparsepodd  % Page is odd
+            \else
+              \marginparsep=\marginparsepeven  % Page is even
+            \fi
+          \else
+            \marginparsep=\marginparsepodd
+          \fi
+          \mph@orig@addmarginpar}
+         {}                                           % success
+         {\message{Error! Couldn't hook into command  % failure
+             `\string\@addmarginpar'}}
+
+{%% Group to keep patching commands local
+  %
+  % Here we use a little trick to repeatedly patch the \@mn@@@marginnote
+  % command, replacing all instances of \kern\marginparsep with a
+  % conditional. We call \patch recursively each time on success, and stop
+  % when the patch fails (because all instances have been replaced).  If the
+  % patch fails the first time, we show an error message.
+  \def\patcherr{%
+    \message{Error! Couldn't hook into command `\string\@mn@@@marginnote'}}
+  \def\patchok{%
+    \let\patcherr\relax % Only display error if first patch fails
+    \patch              % Now patch again.
+  }
+  \def\patch{
+    \patchcmd{\@mn@@@marginnote}                   % In this command
+             {\kern\marginparsep}                  % ... replace this...
+             {\ifx\@mn@currpage\relax\else         % ... with this
+                \if@twoside\ifodd\@mn@currpage\relax
+                    \kern\marginparsepodd
+                  \else
+                    \kern\marginparsepeven
+                  \fi
+                \else
+                  \kern\marginparsepodd
+                \fi
+              \fi}
+             {\message{Patched!}\patchok}          % success (recurse)
+             {\patcherr}                           % fail
+  }
+  \message{Patching `\string\@mn@@@marginnote`!}
+  \patch
+  \global\let\@mn@@@marginnote\@mn@@@marginnote    % Make patch global
+}
+\makeatother
+\endinput
+%%
+%% End of file `sidenotesplus.sty'.
