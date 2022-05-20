@@ -2,7 +2,7 @@ LaTeX package sidenotesplus
 Copyright (c) Anton Vrba, 2022
 -------------------------------------------------------------------
 Version:
-  2022/05/15 1.00  Initial release
+  2022/05/20 1.00  Initial release
 Licence:
   This work may be distributed and/or modified under the conditions
   of the LaTeX Project Public License, version 1.3c of the license.
