@@ -36,7 +36,7 @@
 %<package>\NeedsTeXFormat{LaTeX2e}[2020/10/01]
 %<package>\ProvidesPackage{sidenotesplus}
 %<*package>
-    [2022/05/15 1.00 rich text marginal notes, tables and figures ]
+    [2022/05/20 1.00 rich text marginal notes, tables and figures ]
 %</package>
 %<package>\RequirePackage{marginnote} % provides an offset option for the marginals instead of a float
 %<package>\RequirePackage{caption} % handles the captions (in the margin)
@@ -170,16 +170,21 @@
 %
 % ~
 %
+%  \noindent Note: All marginals placed with a fixed offset, that is with the |<fixed offset>|
+%  option can be overwritten by the marginals that float.
+%
+% ~
+%
 %
 % \DescribeMacro{\sidenote}
-% The |\sidenote| has four options
-%  \verb+*|offset|<offsett>(custom mark){content}+
-% preceding the note content
+% The |\sidenote| has five options
+%  \verb+*|offset|<offsett>(custom mark)!colour!+
+% all preceding the note |{content}|.
+% The options are defined by their enclosures \verb+*||,<>,(),!!+
+% and must be in the order listed above.
 %
-
-% The options are defined by their enclosures \verb+||,<>,()+
-% and must be in this order if used.
-% Example, \verb"\sitenote|10pt|($\bigstar$){text}" is valid
+% Example: \verb"\sitenote|10pt|($\bigstar$){text}" is valid
+%
 % but \verb"\sitenote($\bigstar$)|10pt|{text}" will give an error
 %
 % ~
@@ -297,6 +302,30 @@
 % renders:  Author\textsuperscript{a}, where 'a' is side note mark, whereas |\sidecitet*{BibReference}|
 % is the possessive version and renders:  Author's\textsuperscript{a}.
 %
+%
+% \subsection{Packages loaded}
+%
+%   \begin{description}
+%     \item[marginnote]
+%        supports an alternative to \verb+\marginpar+ and creates non floating
+%        notes in the margin.
+%     \item[mparhack] to get \verb+\marginpar+ right
+%     \item[caption]
+%        allows to set figure and table captions in the margin and allows
+%        easier formatting of these captions. Please refer to the
+%        \emph{caption} manual for details on styles.
+%     \item[xparse] is used to take advantage of the improved \LaTeX3 syntax.
+%        All macros and environments are defined using this package.
+%     \item[l3keys2e] provides a key/value mechanism
+%     \item[xspace] provides the command |\xspace|
+%     \item[changepage] is used to correctly shift figure* and table*. It has
+%        to use the option [strict] to work properly. This might lead to an
+%        option clash, if the same package is loaded without this option.
+%     \item[ifoddpage] provides the command |\ifoddpage|
+%     \item[etoolbox]  provides the command |\patchcmd|
+%     \item[calc] provides calculation such as adding lengths
+%
+%  \end{description}%
 
 %
 % \StopEventually{}
@@ -506,6 +535,10 @@
 % --
 %
 %    \begin{macrocode}
+\renewcommand*{\raggedleftmarginnote}{}
+\renewcommand*{\raggedrightmarginnote}{}
+\renewcommand*{\marginfont}{}
+
 \NewDocumentCommand \snp@placemarginal {d!! m m }
 {
    \IfNoValueOrEmptyTF{#1}
@@ -524,6 +557,7 @@
            {\marginpar{\begin{@snp@llr} #3\end{@snp@llr}}}
            {\marginnote{\begin{@snp@llr}\snp@sidenoteformat #3\end{@snp@llr}}[#2]}
         }
+
         {
            \IfNoValueOrEmptyTF{#2}
            {\marginpar{ #3}}
@@ -542,25 +576,25 @@
         {
            \IfNoValueOrEmptyTF{#2}
            {\marginpar{  \textcolor{#1}{#3} }}
-           {\marginnote{\snp@sidenoteformat \textcolor{#1}{#3}}[#2]}
+           {\marginnote{\snp@sidenoteformat  \textcolor{#1}{#3}}[#2]}
         }
         {
         \bool_if:NTF \l@snp@symmetric
         {
            \IfNoValueOrEmptyTF{#2}
            {\marginpar{\begin{@snp@llr} \textcolor{#1}{#3}\end{@snp@llr}}}
-           {\marginnote{\begin{@snp@llr}\snp@sidenoteformat \textcolor{#1}{#3}\end{@snp@llr}}[#2]}
+           {\marginnote{\begin{@snp@llr}\snp@sidenoteformat  \textcolor{#1}{#3}\end{@snp@llr}}[#2]}
         }
         {
            \IfNoValueOrEmptyTF{#2}
            {\marginpar{\textcolor{#1}{#3}}}
-           {\marginnote{\snp@sidenoteformat \textcolor{#1}{#3}}[#2]}
+           {\marginnote{ \snp@sidenoteformat  \textcolor{#1}{#3}}[#2]}
         }
         }
      \else
         \IfNoValueOrEmptyTF{#2}
         {\marginpar{ \textcolor{#1}{#3}}}
-        {\marginnote{\snp@sidenoteformat \textcolor{#1}{#3}}[#2]}
+        {\marginnote{ \snp@sidenoteformat  \textcolor{#1}{#3}}[#2]}
      \fi
    }
 }
@@ -590,9 +624,15 @@
   \snp@sidenotemark*(#4)
   \snp@sidenotetext[*]|#2|<#3>(#4)!#5!{#6}
   }{ % unstarred
+\IfNoValueOrEmptyTF{#5} {
   \snp@sidenotemark(#4)
   \snp@sidenotetext[]|#2|<#3>(#4)!#5!{#6}
-  \snp@multimarker
+  \snp@multimarker }
+  {
+  \snp@sidenotemark(#4)!#5!
+  \snp@sidenotetext[]|#2|<#3>(#4)!#5!{#6}
+  \snp@multimarker }
+
   }
 }
 %    \end{macrocode}
@@ -650,7 +690,7 @@
   {% unstarred
      \IfNoValueOrEmptyT{#3}
        {\snp@sidenotemark (#2)}
-       {\snp@sidenotemark ({#2})}
+       {\snp@sidenotemark !#3!( #2)}
   }
   \xspace
 }
@@ -682,7 +722,7 @@
          { \snp@putmarkintext{#2} }
      }{
         \IfNoValueOrEmptyTF{#2}
-          { \textcolor{#3} {\snp@putmarkintext{\snp@symbolnoteoralert} } }
+          { \textcolor{#3} {\snp@putmarkintext{\snp@symbolnoteoralert}} }
           { \textcolor{#3} {\snp@putmarkintext{#2}} }
      }
      \snp@multimarker

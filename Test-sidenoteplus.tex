@@ -1,28 +1,30 @@
+
 \documentclass[twoside,10pt]{article}
 \PassOptionsToPackage{%
      a4paper,% landscape,%
-     bindingoffset=5mm,%
+     bindingoffset=3mm,%
      left=20mm,%
-     textwidth=115mm,%
+     textwidth=110mm,%
      marginparsep=10mm,%
-     marginparwidth=50mm,%
+     marginparwidth=55mm,%
      top=20mm,%
      bottom=20mm,%
      headsep=1\baselineskip,%
      footskip = 2\baselineskip,%
      includeall}   {geometry}%
 \usepackage  {geometry}
+\RequirePackage[utf8]{inputenc}\usepackage[T1]{fontenc}
 \usepackage[alerton]{sidenotesplus}
 
 \RequirePackage[svgnames,dvipsnames]{xcolor}
 \usepackage{lipsum}
 \usepackage{xcolor}
-\setlipsum{%
-  par-before = \begingroup\color{gray},
-  par-after = \endgroup,
-  sentence-before = \begingroup\color{gray},
-  sentence-after = \endgroup
-}
+%\setlipsum{%
+%  par-before = \begingroup\color{gray},
+%  par-after = \endgroup,
+%  sentence-before = \begingroup\color{gray},
+%  sentence-after = \endgroup
+%}
 
 %auto generate the bib file
 \usepackage{filecontents}
@@ -142,49 +144,92 @@ basicstyle=\sffamily,
         provided.
 	\end{abstract}
 
+
 Please first read \textsf{sidenotesplus.pdf} for the descriptions and usage of this package.
 This document served as a test platform while developing the package, and uses the standard \verb"article" \LaTeX\xspace class. The above right margin note list the first view lines\sidenote|-200pt|{%
 \ttfamily\upshape\textbackslash documentclass[twoside,10pt]\textbraceleft article\textbraceright\\
 \textbackslash PassOptionsToPackage\textbraceleft\\
 \makebox[2ex]{} a4paper,\\
-\makebox[2ex]{} bindingoffset=5mm,\\
+\makebox[2ex]{} bindingoffset=3mm,\\
 \makebox[2ex]{} left=20mm,\\
-\makebox[2ex]{} textwidth=115mm,\\
+\makebox[2ex]{} textwidth=110mm,\\
 \makebox[2ex]{} marginparsep=10mm,\\
-\makebox[2ex]{} marginparwidth=50mm,\\
+\makebox[2ex]{} marginparwidth=55mm,\\
 \makebox[2ex]{} top=20mm, bottom=20mm,\\
 \makebox[2ex]{} headsep=1\textbackslash baselineskip,\\
 \makebox[2ex]{} footskip = 2\textbackslash baselineskip,\\
 \makebox[2ex]{} includeall\textbraceright   \textbraceleft geometry\textbraceright\\
 \textbackslash usepackage  \textbraceleft geometry\textbraceright\\
 \textbackslash usepackage[alerton]\textbraceleft sidenotesplus\textbraceright\\
-} of the document preamble
+} of the document preamble.
 
-
+Here we have three \sidenote|-15pt|{\textsf{\upshape\textbackslash sidenote|-15pt|} Test up}%
+\sidenote!Blue!{\textsf{\upshape\textbackslash sidenote!Blue!} Test colour}% 
+\sidenote<12pt>{\textsf{\upshape\textbackslash sidenote<12pt>} Test fixed offset}
+ and the commas are inserted automatically between the text markers. But, if a line break
+ is between the two \verb"\sidenote " commands, then that requires a \% sign before the line break.
+ 
+In many environments the floating option fails thus the fixed option is used. Example, a side note used in an equation:
 
 \begin{equation} \label{eq:123}
-  a=b\quad \text{see\sidenote<0em>{test} }
+  a=b\quad \text{see\sidenote<0pt>{test} }
 \end{equation}
-was codedcoded \verb+a=b\quad\text{see\sidenote<0em>!Red!{test}}+. in \eqref{eq:123} Important here is the option \verb/<0em>/.
+an was coded \verb+a=b\quad\text{see\sidenote<0pt>{test}}+. in \eqref{eq:123} Important here is the option \verb/<0pt>/ with any valid length.
 
-~
 
-testing sidenotetext* \sidenotetext*{ A sidenotetext without a mark. Also testing if the command \emph{sidepar} works.
-\sidepar And here we have a new paragraph. And here we have a new paragraph. And here we have a new paragraph}
+Side notes can be placed without \sidenotetext*|-20.pt|{ A sidenotetext without a mark. Also testing if the command \emph{sidepar} works.
+\sidepar And here we have a new paragraph. And here we have a new paragraph. And here we have a new paragraph} references by using the \verb"\sidenote*" option
 
-~
+
+
+Similar to \verb"\footnotemark"  and \verb"\footnotetext" the package provides macros \verb"\sidenotemark", \verb"\sidenotetext" and \verb"\sidenotetextbefore" with the same option set. In usage \verb"\sidenotemark" is followed by \verb"\sidenotetext", whereas \verb"\sidenotetextbefore" is followed by \verb"\sidenotemark".  The side not is placed relative to the \verb"\sidenotetext" commands.
+
+  \sidecitet*{bringhurst:2002} expertise is in typography, and the famous expression $E=mc^2$ was first presented in this paper\sidecite{Einstein_1905e}.
+
+~ 
+  
+\noindent  The above paragraph was coded:
+  \begin{verbatim}
+   \sidecitet*{bringhurst:2002} expertise is in typography, 
+   and the famous expression $E=mc^2$ was first presented 
+   in this paper\sidecite{Einstein_1905e}.
+  \end{verbatim}
+  
+  
+
+
+The command \verb"\sidealert" provides a temporary margin notes rendered in red or 
+by the user’s defined \verb"!colour!". The alert mark\sidealert{This paragraph needs to be expanded} has zero width so it does not alter the main text layout
+and is also rendered in colour The package option \verb"alerton" needs to
+be specified in the document preamble, if omitted the alerts are not printed. 
 
 \newpage
-Testing sidenote*[]\sidenote*|-1.1em|{test up}\sidenote*{test ---}\sidenote*|1.1em|{test down}
 
-~
+\subsection*{Figure demonstration page A}
+\begin{figure}[h]
+\centering
+    \someimage{0.75*\textwidth}{70pt}{A}%
+        \caption{A: Short caption}
+    \label{imageA}
+\end{figure}
 
+\lipsum[3][4-8]
 
-
-Similar to \verb"\footnotemark"  and \verb"\footnotetext" the macros \verb"\sidenotemark" \verb"\sidenotetext" and \verb"\sidenotetextbefore" are provided, the latter two have the same options as \verb"\sidenote". This is useful in placing margin notes in environments \sidecitet|-20pt|!Red!{bringhurst:2002} where the \verb"\sidenode" is not \sidecite
-{Einstein_1905e} permitted.
-
-\begin{margintable}
+\begin{figure}[h]
+\centering
+    \someimage{0.75*\textwidth}{70pt}{B}%
+    \caption[A: Long caption] {A: \emph{Long caption} \lipsum[3][1-3]}
+    \label{imageB}
+\end{figure}
+%
+%
+\begin{marginfigure}|-500pt|%
+    \someimage{\marginparwidth}{70pt}{C}%%
+    \margincaption {A: small rectangle in the margin.\label{rectangle1}}%
+\end{marginfigure}%
+%
+%
+\begin{margintable}|-500pt|
 \upshape
 \begin{tabularx}{\marginparwidth}{c X}
  \hline
@@ -195,12 +240,63 @@ Similar to \verb"\footnotemark"  and \verb"\footnotetext" the macros \verb"\side
  width of the table.\\
  \hline
  \end{tabularx}
- \vskip-1ex
- \caption{Some description \label{mtable1}}
+ \vskip-1.8ex
+ \margincaption{A: Some description \label{mtable1}}
 \end{margintable}
-
-\begin{table}[h]
+%
+%
+\begin{marginfigure}|-500pt|%
+    \someimage{\marginparwidth}{70pt}{D}%%
+    \margincaption[A: Second margin]{A: Second margin figure with a very long label to take many lines.\label{rectangle2}}%
+\end{marginfigure}%
+%
+%
+\sidenote*|-40pt|{The gaps between the above floats can be increase by {\upshape \textbackslash \textsf{marginparpush} } command.}
+%
+%
+\begin{figure}[h]
+\raggedinner
+    \sidecaption[A: Side caption]{A:  \emph{Side caption} with raggedinner command in figure ennvironment with a lengthy text \lipsum[7][4-5] }
+    \label{imageD}
+    \someimage{0.75*\textwidth}{70pt}{E}%
+\end{figure}
+%
+%
+\begin{figure*}[h]
 \centering
+    \someimage{\linewidth}{100pt}{Full width figure}%
+    \caption[A: Full width] {\emph{Full width} \lipsum[12][1-5]}
+    \label{imagefw}
+\end{figure*}
+\lipsum[3][4-6]\sidenote<-10pt>{\lipsum[3][1-2]}\par\lipsum[7][4-9]
+\newpage
+
+\subsection*{Figure demonstration page B}
+\begin{figure}[h]
+\centering
+    \someimage{0.75*\textwidth}{70pt}{A}%
+        \caption{B: Short caption}
+    \label{imageA}
+\end{figure}
+
+\lipsum[3][4-8]
+
+\begin{figure}[h]
+\centering
+    \someimage{0.75*\textwidth}{70pt}{B}%
+    \caption[B: Long caption] {B: \emph{Long caption} \lipsum[3][1-3]}
+    \label{imageB}
+\end{figure}
+%
+%
+\begin{marginfigure}|-500pt|%
+    \someimage{\marginparwidth}{70pt}{C}%%
+    \margincaption {B: small rectangle in the margin.\label{rectangle1}}%
+\end{marginfigure}%
+%
+%
+\begin{margintable}|-500pt|
+\upshape
 \begin{tabularx}{\marginparwidth}{c X}
  \hline
  \multicolumn{2}{c}{Long Table Heading}\\
@@ -210,143 +306,42 @@ Similar to \verb"\footnotemark"  and \verb"\footnotetext" the macros \verb"\side
  width of the table.\\
  \hline
  \end{tabularx}
- \vskip-1ex
- \caption{Some description \label{mtable1}}
-\end{table}
-The margin note  is not positioned by the \verb"\sidenotemark", but rather it is positioned relative\sidealert{Alarm it is burning} to \verb"\sidenotetext" and \verb"\sidenotetextbefore"
-
-
-
-
-
-\noindent A \LaTeX\xspace \verb"\par" command in the margin text throws an error. The command \verb"\sidepar" renders a new paragraph\sidenote{\lipsum[1][2]} in the margin note.
-
-~
-
-
-In the \verb"figure" or \verb"table" environment the command caption can be replaced with \verb"sidecaption"\\\noindent\verb"\sidecaption*<offset>[short caption]{long caption}"\newline
-Use \verb|\raggedouter| to align figures, or tables, to the outer margin. The caption does not float and is fixed relative to the figure, the \verb"offset" is used to fine tune the placing of the caption relative to the figure.  Hint: short remarks, or notes, to the figure can now be be placed in the margin by using the starred version \verb"sidecaption*<offset>{A note}".
-
-\newpage
-
-\listoffigures
-\newlength \ghostheight
-\newsavebox{\ghostbox}
-\definecolor{transparant}{cmyk}{0,0,0,0}
-\NewDocumentCommand\ghost{+m}
-{
-  \savebox{\ghostbox}[\textwidth]
-  {
-    \begin{minipage}{\textwidth}
-       \captionsetup{font={color=transparant}} #1
-    \end{minipage}
-  }
-  \settoheight{\ghostheight}{\fbox{\usebox{\ghostbox}}}
-  \setlength{\ghostheight}{1em-\ht\ghostbox-\dp\ghostbox}
-  \usebox{\ghostbox}\vskip\ghostheight
-}
-
-\newpage
-\subsection*{Figure demonstration page A}
-\begin{figure}[h]
-\centering
-    \someimage{0.75*\textwidth}{80pt}{A}%
-    \ghost{\caption{Short ghost caption Short ghost caption Short ghost caption Short ghost caption    }}
-        and some text and some text
-    \label{imageA}
-\end{figure}
-
-\lipsum[3][4-8]\par\lipsum[7][4-9]
-
-\begin{figure}[h]
-\centering
-    \someimage{0.75*\textwidth}{80pt}{B}%
-    \caption[Long caption] {\emph{Long caption} \lipsum[3][1-3]}
-    \label{imageB}
-\end{figure}
-
+ \vskip-1.8ex
+ \margincaption{B: Some description \label{mtable1}}
+\end{margintable}
+%
+%
 \begin{marginfigure}|-500pt|%
-    \someimage{\marginparwidth}{80pt}{M(ap)}%%
-    \margincaption{ MMMPPP A small rectangle put in the margin.\label{rectangle1}}%
+    \someimage{\marginparwidth}{70pt}{D}%%
+    \margincaption[B: Second margin]{B: Second margin figure with a very long label to take many lines.\label{rectangle2}}%
 \end{marginfigure}%
-\begin{marginfigure}|-500pt|%
-    \someimage{\marginparwidth}{80pt}{M(b)}%%
-    \margincaption[but a short entry]{Second margin figure with a very long label to take many lines.\label{rectangle2}}%
-\end{marginfigure}%
-
-\begin{marginfigure}|-500pt|%
-    \someimage{\marginparwidth}{80pt}{M(c)}%%
-    \margincaption{Third margin figure.\label{rectangle3}}%
-\end{marginfigure}%
-
-AAA\sidenote{TEST}
-
+%
+%
+\sidenote*|-40pt|{The gaps between the above floats can be increase by {\upshape \textbackslash \textsf{marginparpush} } command.}
+%
+%
 \begin{figure}[h]
 \raggedinner
-    \sidecaption[Side caption]{\emph{Side caption} with raggedinner command in figure ennvironment}
+    \sidecaption[B: Side caption]{B:  \emph{Side caption} with raggedinner command in figure ennvironment \lipsum[7][4-5]}
     \label{imageD}
-    \someimage{0.75*\textwidth}{80pt}{D}%
+    \someimage{0.75*\textwidth}{70pt}{E}%
 \end{figure}
-
-This is body text, the caption for above figure is in the marginpar.
-
+%
+%
 \begin{figure*}[h]
 \centering
     \someimage{\linewidth}{100pt}{Full width figure}%
-    \caption[Full width] {\emph{Full width} \lipsum[12][1-5]}
+    \caption[B: Full width] {\emph{Full width} \lipsum[12][1-5]}
     \label{imagefw}
 \end{figure*}
-\lipsum[3][4-8]%\par\lipsum[7][4-9]
+\lipsum[3][4-6]\sidenote<-10pt>{\lipsum[3][1-2]}\par\lipsum[7][4-9]
 \newpage
-\subsection*{Figure demonstration page B}
-\begin{figure}[h]
-\centering
-    \someimage{0.75*\textwidth}{80pt}{A}%
-    \caption{Short caption}
-    \label{imageA2}
-\end{figure}
 
-\lipsum[3][4-8]\par\lipsum[7][4-9]
 
-\begin{figure}[h]
-\centering
-    \someimage{0.75*\textwidth}{80pt}{B}%
-    \caption[Long caption] {\emph{Long caption} \lipsum[3][1-3]}
-    \label{imageB2}
-\end{figure}
-
-\begin{marginfigure}|-500pt|%
-    \someimage{\marginparwidth}{80pt}{M(a)}%%
-    \margincaption{A small rectangle put in the margin.\label{rectangle1.2}}%
-\end{marginfigure}%
-\begin{marginfigure}|-500pt|%
-    \someimage{\marginparwidth}{80pt}{M(b)}%%
-    \margincaption{Second margin figure.\label{rectangle2.2}}%
-\end{marginfigure}%
-
-\begin{marginfigure}|-500pt|%
-    \someimage{\marginparwidth}{80pt}{M(c)}%%
-    \margincaption{Third margin figure.\label{rectangle2.3}}%
-\end{marginfigure}%
-
-BBB\sidenote{TEST}
-
-\begin{figure}[h]
-\raggedinner
-    \sidecaption{\emph{Side caption} with raggedinner command in figure ennvironment}
-    \label{imageD2}
-    \someimage{0.75*\textwidth}{80pt}{D}%
-\end{figure}
-
-This is body text, the caption for above figure is in the marginpar.
-
-\begin{figure*}[h]
-\centering
-    \someimage{\linewidth}{100pt}{Full width figure}%
-    \caption[Full width] {\emph{Full width} \lipsum[12][1-5]}
-    \label{imageFW2}
-\end{figure*}
-\lipsum[3][4-8]%\par\lipsum[7][4-9]
+\newpage
+And a final check
+\listoffigures
+\listoftables
 
 
 
