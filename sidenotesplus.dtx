@@ -104,7 +104,7 @@
 % \end{abstract}
 %
 % \paragraph*{Note:} Margin notes, figures and tables placements require up to
-%  three compilations to be as attended.
+%  three compilations to be as intended.
 %%
 % \paragraph*{Note:} This package is inspired by the package |sidenotes| authored by
 % Andy Thomas and has many features in common. But, compatibility is
@@ -1237,7 +1237,7 @@
   \IfNoValueOrEmptyTF{#7}
   {\RenewDocumentCommand \snp@after {} {}}
   {\RenewDocumentCommand \snp@after {} {#7}}
-  \sidenote|#2|<#3>(#4)!#5!{\upshape\fullcite[\snp@before][\snp@after]{#8}}
+  \sidenote|#2|<#3>(#4)!#5!{\kern-2.3pt\upshape\fullcite[\snp@before][\snp@after]{#8}}
 }
 %    \end{macrocode}
 %
@@ -1255,11 +1255,11 @@
    \IfBooleanTF{#1}
    {
       \citeauthor{#8}'s\sidenote|#2|<#3>(#4)!#5!
-          {\upshape\fullcite[\snp@before][\snp@after]{#8}}
+          {\kern-2.3pt\upshape\fullcite[\snp@before][\snp@after]{#8}}
    }
    {
       \citeauthor{#8}\sidenote|#2|<#3>(#4)!#5!
-          {\upshape\fullcite[\snp@before][\snp@after]{#8}}
+          {\kern-2.3pt\upshape\fullcite[\snp@before][\snp@after]{#8}}
    }
 }
 %    \end{macrocode}
