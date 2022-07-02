@@ -54,4 +54,11 @@ especially with the \verb|shrink| and \verb|stretch| options.
 \bigbreak
 
 \lipsum[1]\sidenote{\lipsum[2]}
+
+\lipsum[3]\setSNPfont{\ttfamily}\sidenote{\lipsum[4]}
+
+\bigbreak
+\verb|\setSNPfont{\fontspec{Courier}}| or any other font name on your system
+will work if you have previously loaded the \verb|fontspec| package and are
+compiling with \verb|lualatex| instead of \verb|pdftex|.
 \end{document}

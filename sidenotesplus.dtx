@@ -439,6 +439,14 @@
  alerton .code:n = {\bool_set_true:N \l@snp@alerton},
 }
 \ProcessKeysOptions { sidenoteplus }
+\NewDocumentCommand \setSNPfont { m }
+  {
+    \RenewDocumentCommand \snp@font { }
+    {
+      #1
+    }
+  }
+
 \bool_if:NTF \l@snp@Ragged
      {\RequirePackage{ragged2e}}
      {}
