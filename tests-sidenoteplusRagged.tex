@@ -1,0 +1,57 @@
+\documentclass[twoside,10pt,ragged]{article}
+\PassOptionsToPackage{%
+  a4paper,% landscape,%
+  bindingoffset=3mm,%
+  left=20mm,%
+  textwidth=110mm,%
+  marginparsep=10mm,%
+  marginparwidth=55mm,%
+  top=20mm,%
+  bottom=20mm,%
+  headsep=1\baselineskip,%
+  footskip = 2\baselineskip,%
+  includeall}   {geometry}%
+\usepackage  {geometry}
+\RequirePackage[utf8]{inputenc}\usepackage[T1]{fontenc}
+\usepackage[alerton,Ragged]{sidenotesplus}
+
+\RequirePackage[svgnames,dvipsnames]{xcolor}
+\usepackage{lipsum}
+%\setlipsum{%
+%  par-before = \begingroup\color{gray},
+%  par-after = \endgroup,
+%  sentence-before = \begingroup\color{gray},
+%  sentence-after = \endgroup
+%}
+
+\captionsetup{font=small}  % Requires Package{caption} loaded in sidenoteplus
+
+
+% Author info
+\title{\textbf{\textsf{sidenotesplus}} Example Pages for testing Ragged}
+\author{Anton Vrba}
+
+\date{\today}
+
+\linespread{1.05} % a bit more for Palatino
+
+\let\OldTexttt\texttt
+\renewcommand{\texttt}[1]{\OldTexttt{\color{MidnightBlue}{#1}}}
+
+
+
+\newcommand \describe \paragraph
+
+
+\begin{document}
+\maketitle
+
+Sidenotes should be \verb|RaggedRight| from package \verb|ragged2e|.
+This allows some hyphenation to avoid excessively short lines.
+Excessive hyphenation is often reduced by using the package \verb|microtype|
+especially with the \verb|shrink| and \verb|stretch| options.
+
+\bigbreak
+
+\lipsum[1]\sidenote{\lipsum[2]}
+\end{document}

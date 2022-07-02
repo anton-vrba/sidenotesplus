@@ -385,6 +385,7 @@
 \bool_new:N \l@snp@alerton
 \bool_new:N \l@snp@alertmarkon
 \bool_new:N \l@snp@ragged
+\bool_new:N \l@snp@Ragged
 \bool_new:N \l@snp@symmetric
 \bool_new:N \l@snp@page
 
@@ -392,6 +393,7 @@
 \bool_set_false:N \l@snp@alerton
 \bool_set_false:N \l@snp@alertmarkon
 \bool_set_false:N \l@snp@ragged
+\bool_set_false:N \l@snp@Ragged
 \bool_set_true:N \l@snp@symmetric
 
 
@@ -430,9 +432,16 @@
  ragged .code:n = { \RenewDocumentCommand \snp@leftmarginstyle {}{\raggedleft}
                     \RenewDocumentCommand \snp@rightmarginstyle {}{\raggedright}
                     \bool_set_true:N \l@snp@ragged  },
+ Ragged .code:n = { \RenewDocumentCommand \snp@leftmarginstyle {}{\RaggedLeft}
+                    \RenewDocumentCommand \snp@rightmarginstyle {}{\RaggedRight}
+                    \bool_set_true:N \l@snp@Ragged
+                    \bool_set_true:N \l@snp@ragged  },
  alerton .code:n = {\bool_set_true:N \l@snp@alerton},
 }
 \ProcessKeysOptions { sidenoteplus }
+\bool_if:NTF \l@snp@Ragged
+     {\RequirePackage{ragged2e}}
+     {}
 \bool_if:NTF \l@snp@ragged
      {\setlength{\snp@marginsepdiff}{0pt} \bool_set_false:N \l@snp@symmetric}
      {\relax}
